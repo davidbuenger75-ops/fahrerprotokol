@@ -4,26 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Fahrerprotokoll</title>
-<meta name="theme-color" content="#16201c">
+<meta name="theme-color" content="#0b2a52">
 <meta name="description" content="Lenk- und Ruhezeiten erfassen und nach VO (EG) 561/2006 und ArbZG prüfen.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{
-  --bg:#f1f3f1;--surface:#ffffff;--fg:#1a2420;--muted:#5d6b65;--line:#d3dbd7;--soft:#e8ece9;
-  --display-bg:#16201c;--display-fg:#d8f5e4;
+  --bg:#f0f3f7;--surface:#ffffff;--fg:#14233a;--muted:#5a6678;--line:#d3dae4;--soft:#e7ecf3;
+  --display-bg:#0b2a52;--display-fg:#eef4fc;--brand:#0b3266;--orange:#ef7d1a;
   --drive:#2a6fdb;--work:#c77d12;--avail:#7a5cc7;--brk:#2f9a63;--ferry:#0f8a8a;--out:#8a949b;
-  --accent:#2a6fdb;--ok:#1d7a46;--warn:#b06d00;--bad:#b3261e;
+  --accent:#0b3266;--ok:#1d7a46;--warn:#b06d00;--bad:#b3261e;
   --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --head:"Roboto Condensed","Arial Narrow",system-ui,sans-serif;
   --mono:ui-monospace,"Roboto Mono",Menlo,Consolas,monospace;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#0f1513;--surface:#18211d;--fg:#e4ece8;--muted:#9aaba3;--line:#2b3833;--soft:#1f2a26;
-  --display-bg:#0a100d;--display-fg:#b9f0d0;--drive:#6aa1f2;--work:#e8a33d;--avail:#a58cf0;--brk:#4cc283;--ferry:#3cc6c6;--out:#7d8a92;
-  --accent:#6aa1f2;--ok:#4cc283;--warn:#f0b13c;--bad:#ff7a70;color-scheme:dark}}
+  --bg:#0d1420;--surface:#151f2e;--fg:#e6edf6;--muted:#9aa8ba;--line:#2a3648;--soft:#1c2839;
+  --display-bg:#071a33;--display-fg:#e6eefb;--brand:#7fa8e6;--orange:#f5953f;--drive:#6aa1f2;--work:#e8a33d;--avail:#a58cf0;--brk:#4cc283;--ferry:#3cc6c6;--out:#7d8a92;
+  --accent:#7fa8e6;--ok:#4cc283;--warn:#f0b13c;--bad:#ff7a70;color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body);-webkit-tap-highlight-color:transparent}
@@ -34,13 +34,22 @@ h2{font:700 1.2rem/1.2 var(--head);margin:0}
 .muted{color:var(--muted)} .small{font-size:.85rem}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 
+/* Kopfzeile */
+.brandbar{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:3px solid var(--orange);padding-bottom:10px}
+.brandbar .logo{background:#fff;border-radius:8px;padding:4px 8px;display:flex;line-height:0}
+.brandbar img{height:60px;width:auto;max-width:100%}
+.infobtn{flex:none;width:40px;height:40px;border-radius:50%;border:2px solid var(--brand);background:var(--surface);color:var(--brand);font:700 1.15rem Georgia,serif;font-style:italic;cursor:pointer}
+.info-logo{background:#fff;border-radius:10px;padding:10px;line-height:0}
+.info-logo img{width:100%;height:auto}
+.copy{font-size:.8rem;color:var(--muted);text-align:center;margin:0}
+
 /* Navigation */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;
   padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));z-index:5}
 nav div{display:grid;grid-template-columns:repeat(4,1fr);width:100%;max-width:720px}
 nav button{background:none;border:0;color:var(--muted);font:600 .78rem var(--body);padding:8px 4px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
 nav button svg{width:24px;height:24px}
-nav button[aria-current="page"]{color:var(--accent);background:var(--soft)}
+nav button[aria-current="page"]{color:var(--accent);background:var(--soft);box-shadow:inset 0 -3px 0 var(--orange)}
 
 /* Display */
 .display{background:var(--display-bg);color:var(--display-fg);border-radius:10px;padding:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
@@ -57,6 +66,7 @@ nav button[aria-current="page"]{color:var(--accent);background:var(--soft)}
 .actbtn{border:0;border-radius:10px;padding:18px 10px;font:700 1.05rem var(--body);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:92px;justify-content:center}
 .actbtn svg{width:30px;height:30px}
 .actbtn.drive{background:var(--drive)}.actbtn.rest{background:var(--brk)}.actbtn.work{background:var(--work)}.actbtn.avail{background:var(--avail)}
+@media (prefers-color-scheme:dark){.actbtn{color:#0d1420}}
 .actbtn[aria-pressed="true"]{outline:4px solid var(--fg);outline-offset:2px}
 .actbtn:active{transform:scale(.98)}
 .mods{display:flex;flex-wrap:wrap;gap:16px}
@@ -94,7 +104,8 @@ select,input[type=text],input[type=datetime-local]{font:inherit;color:var(--fg);
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
 .btns{display:flex;flex-wrap:wrap;gap:8px}
 .btn{font:600 .95rem var(--body);border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:10px 14px;cursor:pointer}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+@media (prefers-color-scheme:dark){.btn.primary{color:#0d1420}}
 .btn.danger{color:var(--bad);border-color:var(--bad)}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:520px}
@@ -113,10 +124,14 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
 </head>
 <body>
 <main>
+  <header class="brandbar">
+    <span class="logo"><img src="logo.png" alt="David Bünger – Dozent für Verkehrs- und Fahrpersonalrecht" width="640" height="300"></span>
+    <button class="infobtn" id="infoBtn" aria-label="Info und Copyright">i</button>
+  </header>
   <!-- HEUTE -->
   <section id="v-today">
     <div style="display:flex;flex-direction:column;gap:16px">
-      <h1>Fahrerprotokoll</h1>
+      <h1>Heute</h1>
       <div class="display" id="display"></div>
       <div class="panel">
         <h2>Tätigkeit wechseln</h2>
@@ -192,6 +207,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
         <p style="margin:0"><strong>Nicht automatisch geprüft:</strong> Art. 12, Ort der Wochenruhe (Art. 8 Abs. 8), Rückkehrpflicht (Art. 8 Abs. 8a), Ausnahme für zwei verkürzte Wochenruhen im grenzüberschreitenden Güterverkehr, genauer Ausgleich verkürzter Wochenruhen, Ausnahmen nach Art. 3 und 13, tarifliche Abweichungen.</p>
         <p style="margin:0">Planungs- und Lernhilfe ohne Gewähr. Bei Kontrollen zählen ausschließlich die Daten des Fahrtenschreibers.</p>
       </div>
+      <p class="copy">Fahrerprotokoll · © <span class="year">2026</span> David Bünger</p>
     </div>
   </section>
 </main>
@@ -211,6 +227,14 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <label class="check" id="eFerryWrap"><input type="checkbox" id="eFerry"> Auf Fähre / Zug</label>
   <p class="small muted" style="margin:0">Ein Eintrag dauert bis zum Beginn des nächsten.</p>
   <div class="btns" style="justify-content:space-between"><button class="btn danger" id="eDel">Löschen</button><span class="btns"><button class="btn" id="eCancel">Abbrechen</button><button class="btn primary" id="eSave">Speichern</button></span></div>
+</div></div>
+<div class="sheet" id="info" hidden><div class="card" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="info-logo"><img src="logo-full.png" alt="David Bünger – Dozent für Verkehrs- und Fahrpersonalrecht" width="1000" height="583"></div>
+  <h2 id="infoTitle">Fahrerprotokoll</h2>
+  <p style="margin:0">Erfassung und Prüfung von Lenk- und Ruhezeiten nach VO (EG) 561/2006 und Arbeitszeitgesetz. Entwickelt von David Bünger, Dozent für Verkehrs- und Fahrpersonalrecht.</p>
+  <p class="small muted" style="margin:0">Version 1.1. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
+  <p style="margin:0;font-weight:600">© <span class="year">2026</span> David Bünger. Alle Rechte vorbehalten.</p>
+  <div class="btns" style="justify-content:flex-end"><button class="btn primary" id="infoClose">Schließen</button></div>
 </div></div>
 <div class="toast" id="toast" hidden></div>
 
@@ -471,6 +495,12 @@ $("demo").onclick=()=>{
   const total=rows.reduce((a,r)=>a+r[1],0);let t=nowMin()-total-60;t=dayStart(t)+360;
   DB.events=rows.map(([type,d,f])=>{const ev={id:uid(),type,start:t,out:type==="drive"&&!!f,ferry:type==="rest"&&!!f};t+=d;return ev});
   commit();toast("Beispielwoche geladen");setView("log")};
+
+/* Info */
+$("infoBtn").onclick=()=>{$("info").hidden=false;$("infoClose").focus()};
+$("infoClose").onclick=()=>$("info").hidden=true;$("info").onclick=e=>{if(e.target.id==="info")$("info").hidden=true};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("info").hidden=true;closeEdit()}});
+document.querySelectorAll(".year").forEach(s=>s.textContent=new Date().getFullYear()>2026?"2026–"+new Date().getFullYear():"2026");
 
 /* Navigation */
 function setView(v){view=v;["today","log","eval","set"].forEach(k=>$("v-"+k).hidden=k!==v);

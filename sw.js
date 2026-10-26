@@ -1,7 +1,7 @@
 // Offline-Betrieb: App-Dateien werden zwischengespeichert.
 // Bei jedem Update die Versionsnummer erhöhen, dann holen sich alle Handys die neue Fassung.
-const CACHE = "fahrerprotokoll-v1";
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
+const CACHE = "fahrerprotokoll-v2";
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./logo.png", "./logo-full.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
