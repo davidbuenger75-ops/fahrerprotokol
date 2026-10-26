@@ -35,10 +35,35 @@ h2{font:700 1.2rem/1.2 var(--head);margin:0}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 
 /* Kopfzeile */
-.brandbar{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:3px solid var(--orange);padding-bottom:10px}
-.brandbar .logo{background:#fff;border-radius:8px;padding:4px 8px;display:flex;line-height:0}
-.brandbar img{height:60px;width:auto;max-width:100%}
-.infobtn{flex:none;width:40px;height:40px;border-radius:50%;border:2px solid var(--brand);background:var(--surface);color:var(--brand);font:700 1.15rem Georgia,serif;font-style:italic;cursor:pointer}
+.brandbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brandbar .name{font:700 .78rem var(--body);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.brandbar .name b{color:var(--orange)}
+.hbtns{display:flex;gap:8px}
+.infobtn{flex:none;width:40px;height:40px;border-radius:50%;border:2px solid var(--brand);background:var(--surface);color:var(--brand);font:700 1.15rem Georgia,serif;cursor:pointer}
+.infobtn.i{font-style:italic}
+.mail{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-weight:600}
+.mail a{color:var(--brand);text-decoration:none;word-break:break-all}
+.mail button{font:600 .8rem var(--body);border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:4px 9px;cursor:pointer}
+
+/* Startbildschirm */
+#splash{position:fixed;inset:0;background:#fff;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  padding:24px max(24px,env(safe-area-inset-right,0px)) 24px max(24px,env(safe-area-inset-left,0px));transition:opacity .45s ease}
+#splash img{width:min(88vw,460px);height:auto;animation:pop .7s ease-out both}
+#splash .sm{font:600 .95rem var(--body);color:#0b3266;letter-spacing:.02em}
+#splash .bar{width:min(60vw,240px);height:4px;background:#e7ecf3;border-radius:2px;overflow:hidden}
+#splash .bar i{display:block;height:100%;width:100%;background:#ef7d1a;transform-origin:left;animation:load 2s linear both}
+#splash.out{opacity:0;pointer-events:none}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@keyframes load{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){#splash img,#splash .bar i{animation:none}#splash{transition:none}}
+
+/* Hilfe */
+.help details{border-top:1px solid var(--line);padding:4px 0}
+.help summary{font-weight:700;padding:10px 0;cursor:pointer;list-style-position:inside}
+.help p,.help ol,.help ul{margin:0 0 10px;font-size:.95rem}
+.help ol,.help ul{padding-left:20px}
+.help li{margin-bottom:4px}
+.help .key{display:inline-block;font:700 .78rem var(--body);color:#fff;border-radius:4px;padding:1px 7px}
 .info-logo{background:#fff;border-radius:10px;padding:10px;line-height:0}
 .info-logo img{width:100%;height:auto}
 .copy{font-size:.8rem;color:var(--muted);text-align:center;margin:0}
@@ -125,8 +150,8 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
 <body>
 <main>
   <header class="brandbar">
-    <span class="logo"><img src="logo.png" alt="David Bünger – Dozent für Verkehrs- und Fahrpersonalrecht" width="640" height="300"></span>
-    <button class="infobtn" id="infoBtn" aria-label="Info und Copyright">i</button>
+    <span class="name">Fahrer<b>protokoll</b></span>
+    <span class="hbtns"><button class="infobtn" id="helpBtn" aria-label="Hilfe">?</button><button class="infobtn i" id="infoBtn" aria-label="Info und Kontakt">i</button></span>
   </header>
   <!-- HEUTE -->
   <section id="v-today">
@@ -230,12 +255,55 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
 </div></div>
 <div class="sheet" id="info" hidden><div class="card" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
   <div class="info-logo"><img src="logo-full.png" alt="David Bünger – Dozent für Verkehrs- und Fahrpersonalrecht" width="1000" height="583"></div>
+  <p class="mail"><a href="mailto:David.Buenger@mail.de">David.Buenger@mail.de</a><button id="copyMail">Kopieren</button></p>
   <h2 id="infoTitle">Fahrerprotokoll</h2>
   <p style="margin:0">Erfassung und Prüfung von Lenk- und Ruhezeiten nach VO (EG) 561/2006 und Arbeitszeitgesetz. Entwickelt von David Bünger, Dozent für Verkehrs- und Fahrpersonalrecht.</p>
-  <p class="small muted" style="margin:0">Version 1.1. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
+  <p class="small muted" style="margin:0">Version 1.2. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
   <p style="margin:0;font-weight:600">© <span class="year">2026</span> David Bünger. Alle Rechte vorbehalten.</p>
   <div class="btns" style="justify-content:flex-end"><button class="btn primary" id="infoClose">Schließen</button></div>
 </div></div>
+<div class="sheet" id="help" hidden><div class="card help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 id="helpTitle">Hilfe</h2><button class="btn" id="helpClose">Schließen</button></div>
+  <details open><summary>Erste Schritte</summary>
+    <p>Starte das Protokoll am besten direkt nach deiner Wochenruhe. Tippe zum Arbeitsbeginn auf die erste Tätigkeit, zum Beispiel <span class="key" style="background:var(--work)">Andere Arbeit</span> für die Abfahrtkontrolle. Ab jetzt läuft die Zeit mit.</p>
+    <p>Hast du mitten in der Woche angefangen? Trag unter <b>Einstellungen → Ausgangslage</b> ein, wie viel du diese Woche und in der Vorwoche schon gelenkt hast.</p></details>
+  <details><summary>Tätigkeit wechseln</summary>
+    <p>Bei jedem Wechsel tippst du einfach auf die neue Tätigkeit. Die vorherige endet automatisch zur selben Minute.</p>
+    <ul><li><span class="key" style="background:var(--drive)">Lenken</span> – du fährst.</li>
+    <li><span class="key" style="background:var(--brk)">Pause / Ruhe</span> – für Pausen <i>und</i> Ruhezeiten. Die App erkennt an der Länge, was es ist: unter 9 h Pause, ab 9 h Tagesruhe, ab 24 h Wochenruhe.</li>
+    <li><span class="key" style="background:var(--work)">Andere Arbeit</span> – Laden, Tanken, Abfahrtkontrolle, Papiere.</li>
+    <li><span class="key" style="background:var(--avail)">Bereitschaft</span> – Wartezeiten, deren Dauer vorher bekannt ist, oder Beifahrer.</li></ul></details>
+  <details><summary>Out of Scope und Fähre/Zug</summary>
+    <p>Läuft gerade <b>Lenken</b>, erscheint darunter der Schalter <b>Out of Scope</b>. Setz ihn, wenn du ein Fahrzeug außerhalb der Lenkzeitvorschriften fährst, etwa einen Transporter zur Firma. Die Fahrt zählt dann als andere Arbeit.</p>
+    <p>Läuft gerade <b>Pause / Ruhe</b>, erscheint der Schalter <b>Fähre / Zug</b>. Setz ihn bei jedem Ruheteil auf der Fähre oder im Zug. Das Auf- und Abfahren trägst du ganz normal als Lenken ein. Die App prüft, ob die Unterbrechungen erlaubt sind: höchstens zwei, zusammen höchstens 1 Stunde.</p></details>
+  <details><summary>Vergessen zu tippen? Nachtragen und korrigieren</summary>
+    <ol><li>Unten auf <b>Protokoll</b> tippen.</li>
+    <li>Den falschen Eintrag antippen, die Uhrzeit bei <b>Beginn</b> ändern und <b>Speichern</b>.</li>
+    <li>Fehlt ein Eintrag ganz, oben auf <b>+ Nachtragen</b> tippen, Tätigkeit und Beginn wählen, speichern.</li></ol>
+    <p>Ein Eintrag dauert immer bis zum Beginn des nächsten. Die Reihenfolge sortiert die App selbst.</p>
+    <p><b>Beispiel:</b> Du hast um 10:15 Pause gemacht, aber erst um 10:30 getippt. Öffne den Pause-Eintrag und stell den Beginn auf 10:15.</p></details>
+  <details><summary>Die Anzeige auf „Heute“ verstehen</summary>
+    <ul><li><b>Bis zur Pause</b> – wie lange du noch fahren darfst, bis 45 min Pause fällig sind (oder 15 + 30 min).</li>
+    <li><b>Restlenkzeit</b> – was in dieser Schicht noch geht, mit 10-h-Verlängerung, solange du sie diese Woche noch hast.</li>
+    <li><b>Tagesruhe ab</b> – wann du spätestens in die Ruhe musst, damit 11 h (oder verkürzt 9 h) in die 24 Stunden passen.</li>
+    <li><b>Rest Woche</b> und <b>Doppelwoche</b> – verbleibende Lenkzeit bis 56 h bzw. 90 h.</li></ul>
+    <p>Gelb heißt knapp, rot heißt überschritten.</p></details>
+  <details><summary>Auswertung</summary>
+    <p>Unter <b>Auswertung</b> siehst du für jede Vorschrift, ob sie eingehalten ist, alle Befunde mit Uhrzeit und Paragraf sowie eine Übersicht über Schichten und Kalenderwochen.</p></details>
+  <details><summary>Daten sichern und Handywechsel</summary>
+    <p>Alles bleibt nur auf deinem Handy. Tipp regelmäßig unter <b>Einstellungen</b> auf <b>Sicherung speichern</b>. Auf einem neuen Handy installierst du die App und tippst auf <b>Sicherung laden</b>.</p>
+    <p>Achtung: Wer die Browserdaten von Chrome löscht, löscht auch das Protokoll.</p></details>
+  <details><summary>Mehrfahrerbetrieb</summary>
+    <p>Unter <b>Einstellungen</b> einschalten. Dann gilt 9 h Tagesruhe innerhalb von 30 h, und deine Zeit als Beifahrer (Bereitschaft) zählt als Fahrtunterbrechung.</p></details>
+  <details><summary>App installieren</summary>
+    <p>Die Adresse in Chrome öffnen, oben rechts auf die drei Punkte tippen und <b>App installieren</b> oder <b>Zum Startbildschirm hinzufügen</b> wählen. Auf dem iPhone in Safari über <b>Teilen → Zum Home-Bildschirm</b>.</p></details>
+  <p class="small muted">Wichtig: Die App ist eine Planungs- und Lernhilfe. Bei Kontrollen zählen ausschließlich die Daten des Fahrtenschreibers.</p>
+</div></div>
+<div id="splash" role="img" aria-label="David Bünger – Dozent für Verkehrs- und Fahrpersonalrecht">
+  <img src="logo-full.png" alt="" width="1000" height="583">
+  <span class="sm">David.Buenger@mail.de</span>
+  <span class="bar"><i></i></span>
+</div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -498,8 +566,12 @@ $("demo").onclick=()=>{
 
 /* Info */
 $("infoBtn").onclick=()=>{$("info").hidden=false;$("infoClose").focus()};
+$("helpBtn").onclick=()=>{$("help").hidden=false;$("helpClose").focus()};
+$("helpClose").onclick=()=>$("help").hidden=true;$("help").onclick=e=>{if(e.target.id==="help")$("help").hidden=true};
+$("copyMail").onclick=()=>{const m="David.Buenger@mail.de";
+  (navigator.clipboard?navigator.clipboard.writeText(m):Promise.reject()).then(()=>toast("Adresse kopiert")).catch(()=>toast(m))};
 $("infoClose").onclick=()=>$("info").hidden=true;$("info").onclick=e=>{if(e.target.id==="info")$("info").hidden=true};
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("info").hidden=true;closeEdit()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("info").hidden=true;$("help").hidden=true;closeEdit()}});
 document.querySelectorAll(".year").forEach(s=>s.textContent=new Date().getFullYear()>2026?"2026–"+new Date().getFullYear():"2026");
 
 /* Navigation */
@@ -509,6 +581,9 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>setView(b.datas
 
 /* Start */
 loadDB();render();
+/* Startbildschirm: höchstens 2,5 s, Antippen überspringt */
+(function(){const s=$("splash");let done=false;const hide=()=>{if(done)return;done=true;s.classList.add("out");setTimeout(()=>s.remove(),500)};
+  s.addEventListener("click",hide);setTimeout(hide,matchMedia("(prefers-reduced-motion: reduce)").matches?1200:2200)})();
 setInterval(()=>{if(view==="today"||view==="log")render()},30000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
