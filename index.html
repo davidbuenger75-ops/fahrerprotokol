@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fahrerprotokoll</title>
+<meta name="theme-color" content="#16201c">
+<meta name="description" content="Lenk- und Ruhezeiten erfassen und nach VO (EG) 561/2006 und ArbZG prüfen.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f1f3f1;--surface:#ffffff;--fg:#1a2420;--muted:#5d6b65;--line:#d3dbd7;--soft:#e8ece9;
+  --display-bg:#16201c;--display-fg:#d8f5e4;
+  --drive:#2a6fdb;--work:#c77d12;--avail:#7a5cc7;--brk:#2f9a63;--ferry:#0f8a8a;--out:#8a949b;
+  --accent:#2a6fdb;--ok:#1d7a46;--warn:#b06d00;--bad:#b3261e;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --head:"Roboto Condensed","Arial Narrow",system-ui,sans-serif;
+  --mono:ui-monospace,"Roboto Mono",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1513;--surface:#18211d;--fg:#e4ece8;--muted:#9aaba3;--line:#2b3833;--soft:#1f2a26;
+  --display-bg:#0a100d;--display-fg:#b9f0d0;--drive:#6aa1f2;--work:#e8a33d;--avail:#a58cf0;--brk:#4cc283;--ferry:#3cc6c6;--out:#7d8a92;
+  --accent:#6aa1f2;--ok:#4cc283;--warn:#f0b13c;--bad:#ff7a70;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body);-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+main{max-width:720px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(92px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+h1{font:700 1.7rem/1.1 var(--head);margin:0}
+h2{font:700 1.2rem/1.2 var(--head);margin:0}
+.muted{color:var(--muted)} .small{font-size:.85rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+
+/* Navigation */
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;
+  padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));z-index:5}
+nav div{display:grid;grid-template-columns:repeat(4,1fr);width:100%;max-width:720px}
+nav button{background:none;border:0;color:var(--muted);font:600 .78rem var(--body);padding:8px 4px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button svg{width:24px;height:24px}
+nav button[aria-current="page"]{color:var(--accent);background:var(--soft)}
+
+/* Display */
+.display{background:var(--display-bg);color:var(--display-fg);border-radius:10px;padding:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.display .k{font:600 .68rem var(--body);text-transform:uppercase;letter-spacing:.1em;opacity:.7}
+.display .v{font:700 1.45rem/1.15 var(--mono);font-variant-numeric:tabular-nums}
+.display .h{font:500 .74rem var(--mono);opacity:.75}
+.v.warn{color:#f6c453}.v.bad{color:#ff8f85}
+.now{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid rgba(216,245,228,.15);padding-bottom:12px}
+.now .act{font:700 1.6rem var(--head);letter-spacing:.02em}
+.now .run{font:700 1.8rem var(--mono);font-variant-numeric:tabular-nums}
+
+/* Tätigkeitstasten */
+.acts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.actbtn{border:0;border-radius:10px;padding:18px 10px;font:700 1.05rem var(--body);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:92px;justify-content:center}
+.actbtn svg{width:30px;height:30px}
+.actbtn.drive{background:var(--drive)}.actbtn.rest{background:var(--brk)}.actbtn.work{background:var(--work)}.actbtn.avail{background:var(--avail)}
+.actbtn[aria-pressed="true"]{outline:4px solid var(--fg);outline-offset:2px}
+.actbtn:active{transform:scale(.98)}
+.mods{display:flex;flex-wrap:wrap;gap:16px}
+.check{display:flex;gap:8px;align-items:center;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+
+/* Befunde */
+.issues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.issues li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:10px 12px;border-radius:6px;background:var(--soft);font-size:.95rem}
+.issues small{display:block;color:var(--muted);font:500 .72rem var(--mono);margin-top:3px}
+.pill{font:700 .64rem var(--body);text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:999px;color:#fff;white-space:nowrap;margin-top:2px;align-self:start}
+.pill.ok{background:var(--ok)}.pill.warn{background:var(--warn)}.pill.bad{background:var(--bad)}.pill.na{background:var(--out)}
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.rule{display:flex;gap:10px;padding:9px 11px;border-radius:6px;background:var(--soft);font-size:.92rem}
+.rule small{display:block;color:var(--muted);font:500 .7rem var(--mono)}
+
+/* Protokoll */
+.dayhead{font:700 .8rem var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 0 4px}
+.strip{position:relative;height:22px;background:var(--soft);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.strip span{position:absolute;top:0;bottom:0}
+.s-drive{background:var(--drive)}.s-work{background:var(--work)}.s-avail{background:var(--avail)}.s-rest{background:var(--brk);opacity:.55}
+.s-ferry{background:repeating-linear-gradient(135deg,var(--ferry) 0 5px,transparent 5px 10px)}
+.s-out{background:repeating-linear-gradient(90deg,var(--out) 0 4px,transparent 4px 8px)}
+.s-over{background:repeating-linear-gradient(45deg,var(--bad) 0 5px,transparent 5px 10px)}
+.entry{display:grid;grid-template-columns:12px 64px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 4px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;color:var(--fg);font:inherit;cursor:pointer}
+.entry .dot{width:12px;height:12px;border-radius:3px}
+.entry .t{font:600 .95rem var(--mono);font-variant-numeric:tabular-nums}
+.entry .d{font:500 .85rem var(--mono);color:var(--muted)}
+.entry.flag .t{color:var(--bad)}
+.tag{font:600 .7rem var(--body);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:6px;color:var(--muted)}
+
+/* Formulare */
+.field{display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted)}
+select,input[type=text],input[type=datetime-local]{font:inherit;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:6px;padding:10px;width:100%;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:600 .95rem var(--body);border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:10px 14px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:520px}
+th{font:600 .68rem var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:6px;border-bottom:1.5px solid var(--line)}
+td{padding:7px 6px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.82rem;font-variant-numeric:tabular-nums}
+td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight:700}
+.tbl{overflow-x:auto}
+
+/* Bearbeiten-Blatt */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.sheet .card{background:var(--surface);width:100%;max-width:560px;border-radius:14px 14px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow:auto}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:600;z-index:20}
+.empty{text-align:center;padding:24px 10px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.actbtn:active{transform:none}}
+</style>
+</head>
+<body>
+<main>
+  <!-- HEUTE -->
+  <section id="v-today">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <h1>Fahrerprotokoll</h1>
+      <div class="display" id="display"></div>
+      <div class="panel">
+        <h2>Tätigkeit wechseln</h2>
+        <div class="acts">
+          <button class="actbtn drive" data-act="drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 14v7M10.3 11 3.5 9.5M13.7 11l6.8-1.5"/></svg>Lenken</button>
+          <button class="actbtn rest" data-act="rest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.6"/></svg>Pause / Ruhe</button>
+          <button class="actbtn work" data-act="work"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 20 8-8M12 20l-8-8"/><path d="M8 4h4v4H8zM12 4h4v4h-4z" transform="rotate(45 12 6)"/></svg>Andere Arbeit</button>
+          <button class="actbtn avail" data-act="avail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 20 20 4"/></svg>Bereitschaft</button>
+        </div>
+        <div class="mods" id="mods"></div>
+        <p class="small muted" style="margin:0">Tippe beim Wechsel einfach auf die neue Tätigkeit. Vergessen? Im Protokoll kannst du jede Zeit nachträglich ändern.</p>
+      </div>
+      <div class="panel">
+        <h2>Aktuelle Hinweise</h2>
+        <ul class="issues" id="recent"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROTOKOLL -->
+  <section id="v-log" hidden>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h1>Protokoll</h1><button class="btn primary" id="addEntry">+ Nachtragen</button></div>
+      <div class="panel" id="log"></div>
+    </div>
+  </section>
+
+  <!-- AUSWERTUNG -->
+  <section id="v-eval" hidden>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <h1>Auswertung</h1>
+      <div class="panel"><h2>Regelübersicht</h2><div class="rules" id="rules"></div></div>
+      <div class="panel"><h2>Alle Befunde</h2><ul class="issues" id="issues"></ul></div>
+      <div class="panel"><h2>Schichten</h2><div class="tbl"><table><thead><tr><th>Beginn</th><th>Ende</th><th>Lenken</th><th>Arbeit</th><th>Pausen</th><th>Ruhe danach</th></tr></thead><tbody id="shifts"></tbody></table></div></div>
+      <div class="panel"><h2>Wochen</h2><div class="tbl"><table><thead><tr><th>KW</th><th>Lenkzeit</th><th>Doppelwoche</th><th>10-h-Tage</th><th>Arbeitszeit</th></tr></thead><tbody id="weeks"></tbody></table></div></div>
+    </div>
+  </section>
+
+  <!-- EINSTELLUNGEN -->
+  <section id="v-set" hidden>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <h1>Einstellungen</h1>
+      <div class="panel">
+        <h2>Betrieb</h2>
+        <label class="check"><input type="checkbox" id="multi"> Mehrfahrerbetrieb</label>
+        <p class="small muted" style="margin:0">Dann gilt 9 h Tagesruhe innerhalb von 30 h, und Bereitschaft als Beifahrer zählt als Fahrtunterbrechung.</p>
+      </div>
+      <div class="panel">
+        <h2>Ausgangslage vor dem ersten Eintrag</h2>
+        <p class="small muted" style="margin:0">Die App nimmt an, dass direkt vor deinem ersten Eintrag eine Wochenruhezeit geendet hat. Am besten beginnst du das Protokoll also nach dem Wochenende.</p>
+        <div class="grid2">
+          <label class="field">Lenkzeit der Vorwoche (h:mm)<input type="text" id="prevWeek" inputmode="numeric" placeholder="z. B. 44:00"></label>
+          <label class="field">Lenkzeit dieser Woche vor dem ersten Eintrag<input type="text" id="weekBefore" inputmode="numeric" placeholder="0:00"></label>
+          <label class="field">10-Stunden-Tage dieser Woche davor<select id="tenBefore"><option value="0">keiner</option><option value="1">einer</option><option value="2">zwei</option></select></label>
+        </div>
+        <label class="check"><input type="checkbox" id="lastReduced"> Letzte Wochenruhe war verkürzt</label>
+      </div>
+      <div class="panel">
+        <h2>Daten sichern</h2>
+        <p class="small muted" style="margin:0">Dein Protokoll liegt nur auf diesem Handy. Sichere es regelmäßig als Datei, damit es bei Handywechsel oder Verlust nicht weg ist.</p>
+        <div class="btns">
+          <button class="btn primary" id="export">Sicherung speichern</button>
+          <label class="btn" for="importFile">Sicherung laden</label><input type="file" id="importFile" accept=".json,application/json" hidden>
+        </div>
+        <p class="small muted" style="margin:0" id="storageInfo"></p>
+      </div>
+      <div class="panel">
+        <h2>Ausprobieren</h2>
+        <div class="btns"><button class="btn" id="demo">Beispielwoche laden</button><button class="btn danger" id="wipe">Alles löschen</button></div>
+      </div>
+      <div class="panel small muted">
+        <p style="margin:0"><strong>Grundlage:</strong> VO (EG) 561/2006 in der Fassung der VO (EU) 2020/1054, Art. 6–9, sowie §§ 3, 4, 21a ArbZG. Out-of-Scope-Fahrten zählen als andere Arbeit, Bereitschaft nicht als Arbeitszeit.</p>
+        <p style="margin:0"><strong>Nicht automatisch geprüft:</strong> Art. 12, Ort der Wochenruhe (Art. 8 Abs. 8), Rückkehrpflicht (Art. 8 Abs. 8a), Ausnahme für zwei verkürzte Wochenruhen im grenzüberschreitenden Güterverkehr, genauer Ausgleich verkürzter Wochenruhen, Ausnahmen nach Art. 3 und 13, tarifliche Abweichungen.</p>
+        <p style="margin:0">Planungs- und Lernhilfe ohne Gewähr. Bei Kontrollen zählen ausschließlich die Daten des Fahrtenschreibers.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav><div>
+  <button data-view="today" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Heute</button>
+  <button data-view="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/></svg>Protokoll</button>
+  <button data-view="eval"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 13 4 4L19 7"/></svg>Auswertung</button>
+  <button data-view="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Einstellungen</button>
+</div></nav>
+
+<div class="sheet" id="sheet" hidden><div class="card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <h2 id="sheetTitle">Eintrag bearbeiten</h2>
+  <label class="field">Tätigkeit<select id="eType"><option value="drive">Lenken</option><option value="rest">Pause / Ruhe</option><option value="work">Andere Arbeit</option><option value="avail">Bereitschaft</option></select></label>
+  <label class="field">Beginn<input type="datetime-local" id="eStart"></label>
+  <label class="check" id="eOutWrap"><input type="checkbox" id="eOut"> Out of Scope</label>
+  <label class="check" id="eFerryWrap"><input type="checkbox" id="eFerry"> Auf Fähre / Zug</label>
+  <p class="small muted" style="margin:0">Ein Eintrag dauert bis zum Beginn des nächsten.</p>
+  <div class="btns" style="justify-content:space-between"><button class="btn danger" id="eDel">Löschen</button><span class="btns"><button class="btn" id="eCancel">Abbrechen</button><button class="btn primary" id="eSave">Speichern</button></span></div>
+</div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+/* ================= Speicher ================= */
+const KEY="fahrerprotokoll-v1";
+let DB={events:[],settings:{multi:false,prevWeek:"",weekBefore:"",tenBefore:"0",lastReduced:false}};
+function loadDB(){try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&Array.isArray(s.events))DB={events:s.events,settings:{...DB.settings,...(s.settings||{})}}}catch(e){}}
+function saveDB(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast("Speichern fehlgeschlagen")}}
+const sortEv=()=>DB.events.sort((a,b)=>a.start-b.start);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ================= Zeit-Helfer ================= */
+const T={drive:"Lenken",work:"Andere Arbeit",avail:"Bereitschaft",rest:"Pause / Ruhe"};
+const COLOR={drive:"var(--drive)",work:"var(--work)",avail:"var(--avail)",rest:"var(--brk)"};
+function parseDur(s){s=String(s||"").trim();if(!s)return null;let m=s.match(/^(\d{1,3})[:.,](\d{1,2})$/);if(m&&+m[2]<60)return +m[1]*60+ +m[2];m=s.match(/^(\d{1,5})$/);if(m)return +m[1];return null}
+const fmt=m=>{const n=m<0;m=Math.abs(Math.round(m));return(n?"−":"")+Math.floor(m/60)+":"+String(m%60).padStart(2,"0")};
+const WD=["So","Mo","Di","Mi","Do","Fr","Sa"];
+const D=m=>new Date(m*60000);
+const hm=m=>{const d=D(m);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+const dd=m=>{const d=D(m);return WD[d.getDay()]+" "+String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."};
+const dt=m=>dd(m)+" "+hm(m);
+const dayStart=m=>{const d=D(m);d.setHours(0,0,0,0);return Math.round(d.getTime()/60000)};
+const nextDay=m=>dayStart(m+1500);
+const weekStart=m=>{const d=D(m);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return Math.round(d.getTime()/60000)};
+function isoWeek(m){const d=D(m);d.setHours(0,0,0,0);d.setDate(d.getDate()+3-((d.getDay()+6)%7));const w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/864e5-3+((w1.getDay()+6)%7))/7)}
+function addWeek(map,s,e,key){while(s<e){const ws=weekStart(s),we=weekStart(ws+10080+60),end=Math.min(e,we);const w=map.get(ws)||{drive:0,work:0,tens:0};w[key]+=end-s;map.set(ws,w);s=end}}
+function overlapNight(s,e){let t=dayStart(s);while(t<e){if(Math.min(e,t+240)>Math.max(s,t))return true;t=nextDay(t)}return false}
+const nowMin=()=>Math.floor(Date.now()/60000);
+const toInput=m=>{const d=D(m);const p=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`};
+const fromInput=s=>{const d=new Date(s);return isNaN(d)?null:Math.round(d.getTime()/60000)};
+
+/* ================= Prüflogik ================= */
+const RULES=[["art7","Fahrtunterbrechung","Art. 7"],["art6d","Tageslenkzeit","Art. 6 Abs. 1"],["art6w","Wochenlenkzeit 56 h","Art. 6 Abs. 2"],["art6dw","Doppelwoche 90 h","Art. 6 Abs. 3"],
+ ["art8d","Tagesruhe in 24 h / 30 h","Art. 8 Abs. 2, 5"],["art8r","Verkürzte Tagesruhen max. 3","Art. 8 Abs. 4"],["art8w","Wochenruhe","Art. 8 Abs. 6"],["art9","Fähre / Zug","Art. 9 Abs. 1"],
+ ["arbd","Tägliche Arbeitszeit","§ 3, § 21a ArbZG"],["arbp","Ruhepausen","§ 4 ArbZG"],["arbw","Wöchentliche Arbeitszeit","§ 21a Abs. 4 ArbZG"]];
+
+function analyze(events,opt){
+  const start=events.length?events[0].start:nowMin();
+  const {multi,prevWeek,weekBefore,tenBefore,lastReduced:lastRedIn,now}=opt;
+  const issues=[];const add=(rule,sev,title,text,at)=>issues.push({rule,sev,title,text,at});
+  const S=[];
+  events.forEach((ev,i)=>{const e=i+1<events.length?events[i+1].start:Math.max(now,ev.start);const d=e-ev.start;
+    if(d>0)S.push({id:ev.id,type:ev.type,out:ev.type==="drive"&&!!ev.out,ferry:ev.type==="rest"&&!!ev.ferry,s:ev.start,e,d,over:null,open:i+1===events.length})});
+  const end=S.length?S[S.length-1].e:start;
+  const raw=[];
+  for(const g of S){if(g.type==="rest"){const l=raw[raw.length-1];if(l&&l.kind==="rest"){l.e=g.e;l.len+=g.d;l.segs.push(g);l.ferry=l.ferry||g.ferry;continue}
+      raw.push({kind:"rest",s:g.s,e:g.e,len:g.d,segs:[g],ferry:g.ferry,interrupts:[],intTotal:0,intCount:0})}else raw.push({kind:"act",seg:g})}
+  const items=[];let ferryUsed=false;
+  for(let i=0;i<raw.length;){const it=raw[i];
+    if(it.kind==="rest"&&it.ferry){ferryUsed=true;const m={...it,segs:[...it.segs],interrupts:[]};let j=i+1;
+      while(j<raw.length){let k=j,acts=[];while(k<raw.length&&raw[k].kind==="act"){acts.push(raw[k].seg);k++}
+        if(!acts.length||k>=raw.length||!raw[k].ferry)break;const a=acts.reduce((x,s)=>x+s.d,0);
+        if(m.intCount+1>2||m.intTotal+a>60){add("art9","bad","Ruhe auf Fähre/Zug zu oft oder zu lange unterbrochen",`Erlaubt sind höchstens zwei Unterbrechungen von zusammen höchstens 1 Stunde. Hier wären es ${m.intCount+1} mit ${fmt(m.intTotal+a)} h.`,acts[0].s);break}
+        m.intCount++;m.intTotal+=a;m.interrupts.push(...acts);m.segs.push(...raw[k].segs);m.len+=raw[k].len;m.e=raw[k].e;j=k+1}
+      if(m.intCount>0){if(m.len>=660){items.push(m);i=j;
+          add("art9","ok","Ruhezeit auf Fähre/Zug korrekt unterbrochen",`${m.intCount}× unterbrochen, zusammen ${fmt(m.intTotal)} h, Ruhe insgesamt ${fmt(m.len)} h. Voraussetzung: Zugang zu Schlafkabine oder Liegeplatz.`,m.s);
+          if(m.len>=2700)add("art9","warn","Regelmäßige Wochenruhe auf Fähre/Zug","Nur zulässig bei einer planmäßigen Fahrt von mindestens 8 Stunden und Zugang zu einer Schlafkabine.",m.s);continue}
+        add("art9","bad","Unterbrechung nur bei regelmäßiger Ruhezeit zulässig",`Die Ruhe auf Fähre/Zug ergibt zusammen nur ${fmt(m.len)} h. Unterbrechen darf man nur eine regelmäßige Tagesruhe (mind. 11 h) oder eine Wochenruhe.`,m.s)}
+      items.push(it);i++;continue}
+    items.push(it);i++}
+
+  const win=multi?1800:1440,weeks=new Map(),shifts=[];
+  let dutyStart=start,lastWeeklyEnd=start,lastWeeklyReduced=lastRedIn,reducedCount=0,splitFirst=false,chain=0,half=false,chainFlagged=false,arbChain=0,arbFlag=false,weeklyOverdueFlag=false,
+      duty={drive:0,arb:0,arbBreaks:0,night:false};
+  const fw=weekStart(start);const tensByWeek=new Map([[fw,tenBefore]]);
+  const applyBreak=d=>{if(d>=45||(half&&d>=30)){chain=0;half=false;chainFlagged=false}else if(d>=15)half=true};
+  function actSeg(g){
+    if(g.type==="drive"&&!g.out){const before=chain;chain+=g.d;duty.drive+=g.d;addWeek(weeks,g.s,g.e,"drive");
+      if(chain>270){g.over=g.s+Math.max(0,270-before);if(!chainFlagged){add("art7","bad","Fahrtunterbrechung fehlt",`Ab ${dt(g.over)} wird länger als 4:30 h ohne gültige Unterbrechung gelenkt. Nötig sind 45 min am Stück oder erst mind. 15, dann mind. 30 min.`,g.over);chainFlagged=true}}}
+    if(g.type==="drive"||g.type==="work"){duty.arb+=g.d;arbChain+=g.d;addWeek(weeks,g.s,g.e,"work");if(overlapNight(g.s,g.e))duty.night=true;
+      if(arbChain>360&&!arbFlag){add("arbp","bad","Mehr als 6 h Arbeit ohne Ruhepause",`Ab ${dt(g.e-(arbChain-360))} wird länger als 6 Stunden ohne Pause von mind. 15 min gearbeitet.`,g.e);arbFlag=true}}
+    if(g.type==="avail"&&multi)applyBreak(g.d);
+    if(g.e>lastWeeklyEnd+8640&&!weeklyOverdueFlag){add("art8w","bad","Wochenruhe überfällig",`Die Wochenruhe hätte spätestens ${dt(lastWeeklyEnd+8640)} beginnen müssen, also nach sechs 24-Stunden-Zeiträumen.`,lastWeeklyEnd+8640);weeklyOverdueFlag=true}
+  }
+  function closeDuty(rest,kind){
+    for(const g of rest.interrupts){if(g.type==="drive"&&!g.out){duty.drive+=g.d;addWeek(weeks,g.s,g.e,"drive")}if(g.type==="drive"||g.type==="work"){duty.arb+=g.d;addWeek(weeks,g.s,g.e,"work")}}
+    const ws=weekStart(dutyStart);let tens=tensByWeek.get(ws)||0;
+    if(duty.drive>600)add("art6d","bad","Tageslenkzeit überschritten",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.drive)} h gelenkt, höchstens 10:00 h sind zulässig.`,dutyStart);
+    else if(duty.drive>540){tens++;tensByWeek.set(ws,tens);
+      if(tens>2)add("art6d","bad","Dritter 10-Stunden-Tag in der Woche",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.drive)} h. Die Verlängerung auf 10 h ist nur zweimal pro Kalenderwoche erlaubt.`,dutyStart);
+      else add("art6d","warn","10-Stunden-Tag",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.drive)} h. Verlängerung Nr. ${tens} von 2 in dieser Kalenderwoche.`,dutyStart)}
+    if(duty.arb>600)add("arbd","bad","Tägliche Arbeitszeit über 10 h",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.arb)} h Arbeitszeit. Höchstens 10 h${duty.night?", bei Nachtarbeit ausdrücklich nach § 21a Abs. 4":""}.`,dutyStart);
+    else if(duty.arb>480)add("arbd","warn","Arbeitszeit über 8 h",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.arb)} h. Zulässig bis 10 h, wenn im Durchschnitt 8 h werktäglich eingehalten werden.`,dutyStart);
+    const need=duty.arb>540?45:duty.arb>360?30:0;
+    if(duty.arbBreaks<need)add("arbp","bad","Zu wenig Ruhepausen",`Schicht ab ${dt(dutyStart)}: Bei ${fmt(duty.arb)} h Arbeitszeit sind ${need} min Pause nötig (Abschnitte ab 15 min), vorhanden ${duty.arbBreaks} min.`,dutyStart);
+    shifts.push({start:dutyStart,end:rest.s,drive:duty.drive,arb:duty.arb,breaks:duty.arbBreaks,night:duty.night,kind,restLen:rest.len,ferry:rest.intCount>0||rest.ferry,openRest:rest.segs[rest.segs.length-1].open});
+  }
+  for(const it of items){
+    if(it.kind==="act"){actSeg(it.seg);continue}
+    const L=it.len;
+    if(L<540){applyBreak(L);if(L>=15){duty.arbBreaks+=L;arbChain=0;arbFlag=false}if(L>=180)splitFirst=true;continue}
+    const deadline=dutyStart+win,within=Math.min(it.e,deadline)-it.s;let kind;
+    if(within<540){add("art8d","bad","Tagesruhe nicht rechtzeitig",`Nach dem Ende der letzten Ruhezeit (${dt(dutyStart)}) muss innerhalb von ${multi?30:24} h eine Tagesruhe von mind. 9 h liegen. Sie hätte spätestens ${dt(deadline-540)} beginnen müssen, begann aber ${dt(it.s)}.`,it.s);kind="zu spät"}
+    else if(multi)kind="Tagesruhe (Mehrfahrer)";
+    else if(splitFirst)kind="aufgeteilt 3 + 9 h";
+    else if(within>=660)kind="regelmäßig";
+    else{const running=it.segs[it.segs.length-1].open&&it.e<deadline;
+      kind=running?"läuft":"verkürzt";
+      if(!running){reducedCount++;
+        if(reducedCount>3)add("art8r","bad","Mehr als drei verkürzte Tagesruhen",`Die verkürzte Tagesruhe ab ${dt(it.s)} ist bereits die ${reducedCount}. seit der letzten Wochenruhe. Erlaubt sind höchstens drei.`,it.s);
+        else add("art8r","warn","Verkürzte Tagesruhe",`Ab ${dt(it.s)}: ${fmt(Math.min(L,within))} h. Das ist Nr. ${reducedCount} von höchstens 3 bis zur nächsten Wochenruhe.`,it.s)}}
+    if(L>=1440){const reg=L>=2700;const running=it.segs[it.segs.length-1].open;
+      kind=reg?"Wochenruhe regelmäßig":running?"Wochenruhe läuft":"Wochenruhe verkürzt";
+      if(it.s>lastWeeklyEnd+8640&&!weeklyOverdueFlag)add("art8w","bad","Wochenruhe zu spät begonnen",`Begonnen ${dt(it.s)}, spätestens wäre ${dt(lastWeeklyEnd+8640)} gewesen.`,it.s);
+      if(!reg&&!running){add("art8w","warn","Verkürzte Wochenruhe",`${fmt(L)} h ab ${dt(it.s)}. Die fehlenden ${fmt(2700-L)} h müssen vor Ende der dritten Folgewoche am Stück ausgeglichen werden, angehängt an eine Ruhezeit von mind. 9 h.`,it.s);
+        if(lastWeeklyReduced)add("art8w","bad","Zwei verkürzte Wochenruhen nacheinander","In zwei aufeinanderfolgenden Wochen braucht es mindestens eine regelmäßige Wochenruhe. Ausnahme nur im grenzüberschreitenden Güterverkehr nach Art. 8 Abs. 6.",it.s)}
+      lastWeeklyReduced=!reg&&!running;lastWeeklyEnd=it.e;reducedCount=0;weeklyOverdueFlag=false}
+    closeDuty(it,kind);
+    dutyStart=it.e;chain=0;half=false;chainFlagged=false;splitFirst=false;arbChain=0;arbFlag=false;duty={drive:0,arb:0,arbBreaks:0,night:false};
+  }
+  const lastItem=items[items.length-1];const inRest=!!(lastItem&&lastItem.kind==="rest"&&lastItem.len>=540);
+  if(!inRest&&end>dutyStart+win)add("art8d","bad","Tagesruhe überfällig",`Seit ${dt(dutyStart)} fehlt eine Tagesruhe. Sie hätte spätestens ${dt(dutyStart+win-540)} beginnen müssen.`,dutyStart+win-540);
+  if(!weeks.has(fw))weeks.set(fw,{drive:0,work:0,tens:0});weeks.get(fw).drive+=weekBefore;
+  const wrows=[];
+  for(const k of [...weeks.keys()].sort((a,b)=>a-b)){const w=weeks.get(k);w.tens=tensByWeek.get(k)||0;
+    const pw=weeks.get(weekStart(k-60));const prev=pw?pw.drive:(k===fw?prevWeek:null);const dbl=prev==null?null:prev+w.drive;
+    if(w.drive>3360)add("art6w","bad","Wochenlenkzeit überschritten",`KW ${isoWeek(k)}: ${fmt(w.drive)} h, zulässig sind 56:00 h.`,k);
+    if(dbl!=null&&dbl>5400)add("art6dw","bad","Doppelwoche überschritten",`KW ${isoWeek(k)} und Vorwoche: ${fmt(dbl)} h, zulässig sind 90:00 h.`,k);
+    if(w.work>3600)add("arbw","bad","Wochenarbeitszeit über 60 h",`KW ${isoWeek(k)}: ${fmt(w.work)} h.`,k);
+    else if(w.work>2880)add("arbw","warn","Wochenarbeitszeit über 48 h",`KW ${isoWeek(k)}: ${fmt(w.work)} h. Zulässig bis 60 h, wenn im Schnitt von 4 Monaten oder 16 Wochen 48 h nicht überschritten werden.`,k);
+    wrows.push({k,...w,dbl})}
+  const curW=weekStart(Math.max(end-1,start));const cw=weeks.get(curW)||{drive:0};
+  const pcw=weeks.get(weekStart(curW-60));const prevCw=pcw?pcw.drive:(curW===fw?prevWeek:null);
+  const tensNow=tensByWeek.get(weekStart(dutyStart))||0;
+  const status={inRest,restSince:inRest?lastItem.s:null,restLen:inRest?lastItem.len:0,dutyStart,toBreak:270-chain,half,
+    dayLeft:(tensNow<2?600:540)-duty.drive,dayMax:tensNow<2?600:540,restReg:dutyStart+win-(multi?540:660),restRed:dutyStart+win-540,
+    weekLeft:3360-cw.drive,dblLeft:prevCw==null?null:5400-(prevCw+cw.drive),weeklyBy:lastWeeklyEnd+8640,reducedCount,multi};
+  return {S,issues,shifts,wrows,status,ferryUsed,start,end};
+}
+
+/* ================= Oberfläche ================= */
+const $=id=>document.getElementById(id);
+let view="today",R=null,editId=null;
+function opts(){const s=DB.settings;return{multi:!!s.multi,prevWeek:parseDur(s.prevWeek),weekBefore:parseDur(s.weekBefore)||0,tenBefore:+s.tenBefore||0,lastReduced:!!s.lastReduced,now:nowMin()}}
+function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+const pillLbl={ok:"OK",warn:"Hinweis",bad:"Verstoß",na:"entfällt"};
+const issueLi=x=>`<li><span class="pill ${x.sev}">${pillLbl[x.sev]}</span><div><strong>${x.title}</strong><br>${x.text}<small>${RULES.find(r=>r[0]===x.rule)[2]}</small></div></li>`;
+
+function renderToday(){
+  const cur=DB.events[DB.events.length-1];const st=R.status;const now=nowMin();
+  const c=v=>v<0?"bad":v<=30?"warn":"";
+  let top;
+  if(!cur)top=`<div class="now"><div><div class="k">Aktuell</div><div class="act">Noch nichts erfasst</div></div></div>`;
+  else{const run=now-cur.start;
+    top=`<div class="now"><div><div class="k">Aktuell seit ${hm(cur.start)}</div><div class="act">${T[cur.type]}${cur.out?" · OUT":""}${cur.ferry?" · Fähre":""}</div></div><div class="run">${fmt(Math.max(run,0))}</div></div>`}
+  let cards="";
+  if(!cur)cards=`<div style="grid-column:1/-1" class="h">Tippe unten auf eine Tätigkeit, um das Protokoll zu starten. Am besten nach deiner Wochenruhe.</div>`;
+  else if(st.inRest){const left=Math.max(0,660-st.restLen);
+    cards=`<div><div class="k">Ruhezeit läuft</div><div class="v">${fmt(st.restLen)}</div><div class="h">seit ${dt(st.restSince)}</div></div>
+      <div><div class="k">Bis 11 h voll</div><div class="v">${left?fmt(left):"erreicht"}</div><div class="h">${left?"Ende frühestens "+hm(st.restSince+660):st.restLen>=1440?"zählt als Wochenruhe":"regelmäßige Tagesruhe"}</div></div>`}
+  else cards=`
+    <div><div class="k">Bis zur Pause</div><div class="v ${c(st.toBreak)}">${st.toBreak<0?"drüber":fmt(st.toBreak)}</div><div class="h">${st.half?"15 min erledigt, 30 fehlen":"45 min oder 15 + 30"}</div></div>
+    <div><div class="k">Restlenkzeit</div><div class="v ${c(st.dayLeft)}">${fmt(Math.max(st.dayLeft,0))}</div><div class="h">Schicht, max. ${fmt(st.dayMax)}</div></div>
+    <div><div class="k">Tagesruhe ab</div><div class="v ${st.restRed<now?"bad":""}">${hm(st.multi?st.restRed:st.restReg)}</div><div class="h">${st.multi?"9 h Mehrfahrer":"spätestens · verkürzt "+hm(st.restRed)}</div></div>`;
+  if(cur)cards+=`<div><div class="k">Rest Woche</div><div class="v ${c(st.weekLeft)}">${fmt(Math.max(st.weekLeft,0))}</div><div class="h">Doppelw. ${st.dblLeft==null?"–":fmt(Math.max(st.dblLeft,0))}</div></div>
+    <div style="grid-column:1/-1"><div class="k">Wochenruhe spätestens ab</div><div class="v" style="font-size:1.15rem">${dt(st.weeklyBy)}</div><div class="h">verkürzte Tagesruhen bisher: ${st.reducedCount} von 3</div></div>`;
+  $("display").innerHTML=top+cards;
+  document.querySelectorAll("[data-act]").forEach(b=>b.setAttribute("aria-pressed",String(!!cur&&cur.type===b.dataset.act)));
+  $("mods").innerHTML=cur&&cur.type==="drive"?`<label class="check"><input type="checkbox" id="curOut"${cur.out?" checked":""}> Diese Fahrt ist Out of Scope</label>`
+    :cur&&cur.type==="rest"?`<label class="check"><input type="checkbox" id="curFerry"${cur.ferry?" checked":""}> Ruhe auf Fähre / Zug</label>`:"";
+  const co=$("curOut"),cf=$("curFerry");
+  if(co)co.onchange=e=>{cur.out=e.target.checked;commit()};if(cf)cf.onchange=e=>{cur.ferry=e.target.checked;commit()};
+  const since=now-7*1440;
+  const rec=R.issues.filter(x=>x.sev!=="ok"&&x.at>=since).sort((a,b)=>b.at-a.at).slice(0,5);
+  $("recent").innerHTML=rec.length?rec.map(issueLi).join(""):`<li><span class="pill ok">OK</span><div>In den letzten 7 Tagen ist alles eingehalten.</div></li>`;
+}
+
+function renderLog(){
+  if(!DB.events.length){$("log").innerHTML=`<div class="empty">Noch keine Einträge. Starte auf „Heute“ mit einer Tätigkeit oder trage über „Nachtragen“ etwas ein.</div>`;return}
+  const byId=new Map(R.S.map(g=>[g.id,g]));
+  const days=new Map();
+  for(const ev of DB.events){const k=dayStart(ev.start);if(!days.has(k))days.set(k,[]);days.get(k).push(ev)}
+  // Tage mit Segmenten, die nur hineinreichen (z. B. lange Ruhe), ergänzen
+  if(R.S.length){for(let d=dayStart(R.start);d<=dayStart(R.end-1);d=nextDay(d))if(!days.has(d))days.set(d,[])}
+  const keys=[...days.keys()].sort((a,b)=>b-a);
+  $("log").innerHTML=keys.map(d=>{const de=nextDay(d);
+    const strip=R.S.filter(g=>g.e>d&&g.s<de).map(g=>{const s=Math.max(g.s,d),e=Math.min(g.e,de),L=(s-d)/(de-d)*100,W=(e-s)/(de-d)*100;
+      const cls=g.type==="drive"?(g.out?"s-out":"s-drive"):g.type==="rest"?(g.ferry?"s-ferry":"s-rest"):"s-"+g.type;
+      let o="";if(g.over!=null&&g.over<de&&g.e>d){const os=Math.max(g.over,d),oe=Math.min(g.e,de);o=`<span class="s-over" style="left:${(os-d)/(de-d)*100}%;width:${(oe-os)/(de-d)*100}%"></span>`}
+      return `<span class="${cls}" style="left:${L}%;width:${W}%"></span>${o}`}).join("");
+    const list=days.get(d).slice().reverse().map(ev=>{const g=byId.get(ev.id);const dur=g?g.d:0;
+      return `<button class="entry${g&&g.over!=null?" flag":""}" data-edit="${ev.id}"><span class="dot" style="background:${COLOR[ev.type]}"></span><span class="t">${hm(ev.start)}</span>
+        <span>${T[ev.type]}${ev.out?'<span class="tag">OUT</span>':""}${ev.ferry?'<span class="tag">Fähre</span>':""}</span><span class="d">${g&&g.open?"läuft ":""}${fmt(dur)}</span></button>`}).join("");
+    return `<div><div class="dayhead">${dd(d)} ${D(d).getFullYear()}</div><div class="strip">${strip}</div>${list}</div>`}).join("");
+  $("log").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEdit(b.dataset.edit));
+}
+
+function renderEval(){
+  $("rules").innerHTML=RULES.map(([k,name,src])=>{const xs=R.issues.filter(x=>x.rule===k);
+    let s=xs.some(x=>x.sev==="bad")?"bad":xs.some(x=>x.sev==="warn")?"warn":"ok";
+    if(k==="art9"&&!R.ferryUsed)s="na";if(k==="art6dw"&&R.wrows.every(w=>w.dbl==null))s="na";if(!DB.events.length)s="na";
+    return `<div class="rule"><span class="pill ${s}">${pillLbl[s]}</span><div>${name}<small>${src}</small></div></div>`}).join("");
+  const list=[...R.issues].sort((a,b)=>b.at-a.at);
+  $("issues").innerHTML=list.length?list.map(issueLi).join(""):`<li><span class="pill ok">OK</span><div>Keine Verstöße oder Besonderheiten gefunden.</div></li>`;
+  $("shifts").innerHTML=R.shifts.slice().reverse().map(s=>`<tr><td>${dt(s.start)}${s.night?" · Nacht":""}</td><td>${dt(s.end)}</td>
+    <td><span class="${s.drive>600?"bad":s.drive>540?"warn":""}">${fmt(s.drive)}</span></td><td><span class="${s.arb>600?"bad":s.arb>480?"warn":""}">${fmt(s.arb)}</span></td>
+    <td>${fmt(s.breaks)}</td><td>${fmt(s.restLen)} · <span class="${s.kind==="zu spät"?"bad":s.kind.includes("verkürzt")?"warn":""}">${s.kind}</span>${s.ferry?" · Fähre":""}</td></tr>`).join("")
+    ||`<tr><td colspan="6">Noch keine abgeschlossene Schicht. Eine Schicht endet mit einer Ruhezeit ab 9 h.</td></tr>`;
+  $("weeks").innerHTML=R.wrows.slice().reverse().map(w=>`<tr><td>KW ${isoWeek(w.k)} · ${dd(w.k)}</td><td><span class="${w.drive>3360?"bad":""}">${fmt(w.drive)}</span> / 56</td>
+    <td>${w.dbl==null?"–":`<span class="${w.dbl>5400?"bad":""}">${fmt(w.dbl)}</span> / 90`}</td><td><span class="${w.tens>2?"bad":""}">${w.tens}</span> / 2</td>
+    <td><span class="${w.work>3600?"bad":w.work>2880?"warn":""}">${fmt(w.work)}</span></td></tr>`).join("");
+}
+
+function renderSettings(){const s=DB.settings;$("multi").checked=!!s.multi;$("prevWeek").value=s.prevWeek||"";$("weekBefore").value=s.weekBefore||"";$("tenBefore").value=s.tenBefore||"0";$("lastReduced").checked=!!s.lastReduced;
+  $("storageInfo").textContent=`${DB.events.length} Einträge gespeichert.`}
+
+function render(){sortEv();R=analyze(DB.events,opts());
+  if(view==="today")renderToday();else if(view==="log")renderLog();else if(view==="eval")renderEval();else renderSettings()}
+function commit(){sortEv();saveDB();render()}
+
+/* Tätigkeit wechseln */
+document.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
+  const type=b.dataset.act,now=nowMin(),cur=DB.events[DB.events.length-1];
+  if(cur&&cur.type===type){toast(T[type]+" läuft bereits");return}
+  if(cur&&cur.start>=now){cur.type=type;cur.out=false;cur.ferry=false}   // gleiche Minute: ersetzen
+  else DB.events.push({id:uid(),type,start:now,out:false,ferry:false});
+  if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}
+  commit();toast(T[type]+" ab "+hm(now));
+});
+
+/* Bearbeiten */
+function syncMods(){const t=$("eType").value;$("eOutWrap").hidden=t!=="drive";$("eFerryWrap").hidden=t!=="rest"}
+function openEdit(id){editId=id;const ev=id?DB.events.find(e=>e.id===id):null;
+  $("sheetTitle").textContent=ev?"Eintrag bearbeiten":"Eintrag nachtragen";
+  $("eType").value=ev?ev.type:"drive";$("eStart").value=toInput(ev?ev.start:nowMin());$("eOut").checked=!!(ev&&ev.out);$("eFerry").checked=!!(ev&&ev.ferry);
+  $("eDel").hidden=!ev;syncMods();$("sheet").hidden=false;$("eType").focus()}
+function closeEdit(){$("sheet").hidden=true;editId=null}
+$("eType").onchange=syncMods;$("eCancel").onclick=closeEdit;$("sheet").onclick=e=>{if(e.target.id==="sheet")closeEdit()};
+$("eSave").onclick=()=>{const st=fromInput($("eStart").value);if(st==null){toast("Bitte Beginn angeben");return}
+  if(st>nowMin()+1){toast("Beginn liegt in der Zukunft");return}
+  const t=$("eType").value,data={type:t,start:st,out:t==="drive"&&$("eOut").checked,ferry:t==="rest"&&$("eFerry").checked};
+  if(DB.events.some(e=>e.start===st&&e.id!==editId)){toast("Zu dieser Minute gibt es schon einen Eintrag");return}
+  if(editId)Object.assign(DB.events.find(e=>e.id===editId),data);else DB.events.push({id:uid(),...data});
+  closeEdit();commit();toast("Gespeichert")};
+$("eDel").onclick=()=>{if($("eDel").dataset.armed){DB.events=DB.events.filter(e=>e.id!==editId);delete $("eDel").dataset.armed;$("eDel").textContent="Löschen";closeEdit();commit();toast("Gelöscht");return}
+  $("eDel").dataset.armed="1";$("eDel").textContent="Wirklich löschen?";setTimeout(()=>{delete $("eDel").dataset.armed;$("eDel").textContent="Löschen"},3000)};
+$("addEntry").onclick=()=>openEdit(null);
+
+/* Einstellungen */
+["multi","lastReduced"].forEach(id=>$(id).onchange=e=>{DB.settings[id]=e.target.checked;commit()});
+["prevWeek","weekBefore"].forEach(id=>$(id).oninput=e=>{DB.settings[id]=e.target.value;saveDB();R=analyze(DB.events,opts())});
+$("tenBefore").onchange=e=>{DB.settings.tenBefore=e.target.value;commit()};
+$("export").onclick=()=>{const blob=new Blob([JSON.stringify({app:"fahrerprotokoll",version:1,exported:new Date().toISOString(),...DB},null,1)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);const d=new Date();a.download=`fahrerprotokoll-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.json`;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast("Sicherung gespeichert")};
+$("importFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const s=JSON.parse(r.result);if(!Array.isArray(s.events))throw 0;
+      const ok=s.events.filter(x=>x&&typeof x.start==="number"&&T[x.type]).map(x=>({id:x.id||uid(),type:x.type,start:x.start,out:!!x.out,ferry:!!x.ferry}));
+      DB={events:ok,settings:{...DB.settings,...(s.settings||{})}};commit();toast(ok.length+" Einträge geladen")}catch(err){toast("Datei ist keine gültige Sicherung")}};
+  r.readAsText(f);e.target.value=""};
+$("wipe").onclick=()=>{const b=$("wipe");if(b.dataset.armed){DB.events=[];commit();delete b.dataset.armed;b.textContent="Alles löschen";toast("Protokoll gelöscht");return}
+  b.dataset.armed="1";b.textContent="Wirklich alles löschen?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Alles löschen"},3000)};
+$("demo").onclick=()=>{
+  const rows=[["work",30],["drive",240],["rest",45],["drive",270],["work",30],["rest",885],["work",15],["drive",150],["rest",15],["drive",120],["rest",30],["drive",120],["work",30],
+   ["rest",120,1],["drive",15],["rest",360,1],["drive",15],["rest",300,1],["work",30],["drive",270],["rest",45],["drive",210],["drive",45,1],["work",30],["rest",2700]];
+  const total=rows.reduce((a,r)=>a+r[1],0);let t=nowMin()-total-60;t=dayStart(t)+360;
+  DB.events=rows.map(([type,d,f])=>{const ev={id:uid(),type,start:t,out:type==="drive"&&!!f,ferry:type==="rest"&&!!f};t+=d;return ev});
+  commit();toast("Beispielwoche geladen");setView("log")};
+
+/* Navigation */
+function setView(v){view=v;["today","log","eval","set"].forEach(k=>$("v-"+k).hidden=k!==v);
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===v?"page":"false"));render();scrollTo(0,0)}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+
+/* Start */
+loadDB();render();
+setInterval(()=>{if(view==="today"||view==="log")render()},30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script>
+</body>
+</html>

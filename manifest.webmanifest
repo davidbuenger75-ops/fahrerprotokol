@@ -1,0 +1,17 @@
+{
+  "name": "Fahrerprotokoll",
+  "short_name": "Fahrerprotokoll",
+  "description": "Lenk- und Ruhezeiten erfassen und nach VO (EG) 561/2006 und ArbZG prüfen.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#16201c",
+  "theme_color": "#16201c",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
