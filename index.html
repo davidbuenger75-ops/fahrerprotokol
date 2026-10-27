@@ -108,6 +108,16 @@ nav button[aria-current="page"]{color:var(--accent);background:var(--soft);box-s
 .rule{display:flex;gap:10px;padding:9px 11px;border-radius:6px;background:var(--soft);font-size:.92rem}
 .rule small{display:block;color:var(--muted);font:500 .7rem var(--mono)}
 
+/* Hinweis-Banner */
+.alert{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));width:min(560px,calc(100% - 24px));z-index:30;
+  background:#ef7d1a;color:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.alert.go{background:#1d7a46}.alert.stop{background:#b3261e}
+.alert b{display:block;font-size:1.05rem}
+.alert span{font-size:.9rem}
+.alert .btn{background:#fff;color:#14233a;border-color:#fff;flex:none}
+@media (prefers-reduced-motion:no-preference){.alert{animation:drop .35s ease-out}}
+@keyframes drop{from{transform:translate(-50%,-20px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+
 /* Bußgeld */
 .fine{margin-top:8px;padding:8px 10px;border-radius:6px;background:var(--surface);border-left:4px solid var(--orange);font-size:.86rem}
 .fine-row{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:4px}
@@ -237,6 +247,18 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
         <label class="check"><input type="checkbox" id="lastReduced"> Letzte Wochenruhe war verkürzt</label>
       </div>
       <div class="panel">
+        <h2>Hinweise und Signale</h2>
+        <label class="check"><input type="checkbox" id="alOn"> Hinweise bei Pause, Lenkzeit und Ruhezeit</label>
+        <div id="alBox" style="display:flex;flex-direction:column;gap:10px">
+          <label class="check"><input type="checkbox" id="alSound"> Ton abspielen</label>
+          <label class="field">Vorwarnung<select id="alPre"><option value="0">keine</option><option value="10">10 min vorher</option><option value="15">15 min vorher</option><option value="30">30 min vorher</option></select></label>
+          <label class="check"><input type="checkbox" id="alWake"> Bildschirm beim Lenken anlassen</label>
+          <p class="small muted" style="margin:0">Die App kann nur Signale geben, solange sie geöffnet ist. Mit dieser Option bleibt der Bildschirm beim Lenken an, dann kommen die Hinweise zuverlässig. Am besten das Handy in eine Halterung und ans Ladekabel.</p>
+          <div class="btns"><button class="btn primary" id="alPerm">Benachrichtigungen erlauben</button><button class="btn" id="alTest">Signal testen</button></div>
+          <p class="small muted" style="margin:0" id="alState"></p>
+        </div>
+      </div>
+      <div class="panel">
         <h2>Daten sichern</h2>
         <p class="small muted" style="margin:0">Dein Protokoll liegt nur auf diesem Handy. Sichere es regelmäßig als Datei, damit es bei Handywechsel oder Verlust nicht weg ist.</p>
         <div class="btns">
@@ -280,7 +302,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <p class="mail"><a href="mailto:David.Buenger@mail.de">David.Buenger@mail.de</a><button id="copyMail">Kopieren</button></p>
   <h2 id="infoTitle">Fahrerprotokoll</h2>
   <p style="margin:0">Erfassung und Prüfung von Lenk- und Ruhezeiten nach VO (EG) 561/2006 und Arbeitszeitgesetz. Entwickelt von David Bünger, Dozent für Verkehrs- und Fahrpersonalrecht.</p>
-  <p class="small muted" style="margin:0">Version 1.3. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
+  <p class="small muted" style="margin:0">Version 1.4. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
   <p style="margin:0;font-weight:600">© <span class="year">2026</span> David Bünger. Alle Rechte vorbehalten.</p>
   <div class="btns" style="justify-content:flex-end"><button class="btn primary" id="infoClose">Schließen</button></div>
 </div></div>
@@ -315,6 +337,10 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <details><summary>Daten sichern und Handywechsel</summary>
     <p>Alles bleibt nur auf deinem Handy. Tipp regelmäßig unter <b>Einstellungen</b> auf <b>Sicherung speichern</b>. Auf einem neuen Handy installierst du die App und tippst auf <b>Sicherung laden</b>.</p>
     <p>Achtung: Wer die Browserdaten von Chrome löscht, löscht auch das Protokoll.</p></details>
+  <details><summary>Hinweise, Ton und Benachrichtigungen</summary>
+    <p>Die App meldet sich mit Ton, Vibration und einem Banner, wenn eine Pause bald fällig oder erreicht ist, wenn die Tageslenkzeit voll ist, wann die Tagesruhe beginnen muss und wenn Pause oder Ruhezeit erfüllt sind.</p>
+    <p>Einstellen unter <b>Einstellungen → Hinweise und Signale</b>. Dort einmal auf „Benachrichtigungen erlauben“ tippen und mit „Signal testen“ prüfen, ob der Ton laut genug ist.</p>
+    <p><b>Wichtig:</b> Die Hinweise kommen nur, solange die App geöffnet ist. Schalte „Bildschirm beim Lenken anlassen“ ein, Handy in die Halterung und ans Ladekabel. Das Handy während der Fahrt nicht bedienen – den Wechsel erst tippen, wenn du stehst.</p></details>
   <details><summary>Profi-Ansicht: Bußgelder nach LV 48</summary>
     <p>Unter <b>Einstellungen → Profi-Ansicht</b> einschalten. Dann steht bei jedem Verstoß der Regelsatz aus dem Buß- und Verwarnungsgeldkatalog LV 48, getrennt für Fahrer und Unternehmer. In der Auswertung siehst du die Summe und kannst zwischen Vorsatz und Fahrlässigkeit umschalten.</p>
     <p>Die Beträge sind eine Orientierung. Die Behörde entscheidet im Einzelfall.</p></details>
@@ -329,13 +355,14 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <span class="sm">David.Buenger@mail.de</span>
   <span class="bar"><i></i></span>
 </div>
+<div class="alert" id="alertBar" hidden role="alert"><div><b id="alertTitle"></b><span id="alertText"></span></div><button class="btn sm" id="alertOk">OK</button></div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
 "use strict";
 /* ================= Speicher ================= */
 const KEY="fahrerprotokoll-v1";
-let DB={events:[],settings:{multi:false,prevWeek:"",weekBefore:"",tenBefore:"0",lastReduced:false,pro:false,culpa:"vorsatz"}};
+let DB={events:[],settings:{multi:false,prevWeek:"",weekBefore:"",tenBefore:"0",lastReduced:false,pro:false,culpa:"vorsatz",alOn:true,alSound:true,alPre:"15",alWake:false}};
 function loadDB(){try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&Array.isArray(s.events))DB={events:s.events,settings:{...DB.settings,...(s.settings||{})}}}catch(e){}}
 function saveDB(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast("Speichern fehlgeschlagen")}}
 const sortEv=()=>DB.events.sort((a,b)=>a.start-b.start);
@@ -617,11 +644,78 @@ function renderEval(){
 }
 
 function renderSettings(){const s=DB.settings;$("multi").checked=!!s.multi;$("prevWeek").value=s.prevWeek||"";$("weekBefore").value=s.weekBefore||"";$("tenBefore").value=s.tenBefore||"0";$("lastReduced").checked=!!s.lastReduced;$("pro").checked=!!s.pro;
+  $("alOn").checked=s.alOn!==false;$("alSound").checked=s.alSound!==false;$("alPre").value=s.alPre??"15";$("alWake").checked=!!s.alWake;$("alBox").hidden=s.alOn===false;alStateText();
   $("storageInfo").textContent=`${DB.events.length} Einträge gespeichert.`}
 
 function render(){sortEv();R=analyze(DB.events,opts());
   if(view==="today")renderToday();else if(view==="log")renderLog();else if(view==="eval")renderEval();else renderSettings()}
 function commit(){sortEv();saveDB();render()}
+
+/* ================= Hinweise und Signale ================= */
+let audioCtx=null,wakeLock=null;
+const AL=()=>DB.settings;
+function unlockAudio(){try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==="suspended")audioCtx.resume()}catch(e){}}
+function beep(kind){if(AL().alSound===false)return;unlockAudio();if(!audioCtx)return;
+  const seq=kind==="stop"?[880,660,880,660]:kind==="go"?[523,659,784]:[784,784];
+  seq.forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime+i*0.28;
+    o.type="square";o.frequency.value=f;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.35,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.24);
+    o.connect(g).connect(audioCtx.destination);o.start(t);o.stop(t+0.26)})}
+function notify(title,body,kind){
+  $("alertTitle").textContent=title;$("alertText").textContent=body;const bar=$("alertBar");bar.className="alert "+(kind||"");bar.hidden=false;
+  clearTimeout(notify.h);notify.h=setTimeout(()=>bar.hidden=true,60000);
+  beep(kind);if(navigator.vibrate)try{navigator.vibrate(kind==="stop"?[400,150,400,150,400]:[300,120,300])}catch(e){}
+  if("Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker)
+    navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:"icon-192.png",badge:"icon-192.png",tag:"fp-"+(kind||"info"),renotify:true,vibrate:[300,120,300]})).catch(()=>{});
+}
+$("alertOk").onclick=()=>$("alertBar").hidden=true;
+let fired=new Set();try{fired=new Set(JSON.parse(sessionStorage.getItem("fp-fired")||"[]"))}catch(e){}
+function fire(key,title,body,kind){if(fired.has(key))return;fired.add(key);try{sessionStorage.setItem("fp-fired",JSON.stringify([...fired].slice(-200)))}catch(e){}notify(title,body,kind)}
+function checkAlerts(){
+  if(AL().alOn===false||!DB.events.length)return;
+  const cur=DB.events[DB.events.length-1],now=nowMin(),pre=+(AL().alPre??15);
+  const R0=analyze(DB.events,opts()),st=R0.status,id=cur.id;
+  if(cur.type==="drive"&&!cur.out){
+    const tb=st.toBreak,dl=st.dayLeft;
+    if(pre&&tb<=pre&&tb>0)fire(id+"pb","Pause bald fällig",`Noch ${tb} min bis zur Fahrtunterbrechung.${st.half?" 15 min hast du schon, jetzt fehlen 30 min.":""}`,"");
+    if(tb<=0)fire(id+"b0","Jetzt Pause einlegen",`4:30 h Lenkzeit erreicht. ${st.half?"Jetzt mindestens 30 min":"Jetzt mindestens 45 min"} Pause.`,"stop");
+    if(pre&&dl<=pre&&dl>0)fire(id+"pd","Tageslenkzeit fast erreicht",`Noch ${dl} min Lenkzeit in dieser Schicht.`,"");
+    if(dl<=0)fire(id+"d0","Tageslenkzeit erreicht",`Die maximale Lenkzeit von ${fmt(st.dayMax)} h ist erreicht. Nicht weiterfahren.`,"stop");
+    if(st.weekLeft<=0)fire(id+"w0","Wochenlenkzeit erreicht","56 h Lenkzeit in dieser Woche sind erreicht.","stop");
+  }
+  if(cur.type!=="rest"&&!st.inRest){
+    const due=st.multi?st.restRed:st.restReg,left=due-now;
+    if(pre&&left<=pre&&left>0)fire(id+"pr","Tagesruhe bald fällig",`Spätestens um ${hm(due)} muss die Tagesruhe beginnen.`,"");
+    if(left<=0&&!st.multi)fire(id+"r0",`Tagesruhe jetzt beginnen`,`Für 11 h Ruhe ist es Zeit. Verkürzt (9 h) spätestens um ${hm(st.restRed)}.`,"stop");
+  }
+  if(cur.type==="rest"){
+    const el=now-cur.start;
+    // Zustand vor dieser Pause: gab es schon 15 min und wurde seitdem gelenkt?
+    const before=analyze(DB.events.slice(0,-1).concat([{...cur,type:"work",start:cur.start}]),{...opts(),now:cur.start}).status;
+    const driven=before.toBreak<270, need=before.half?30:45;
+    if(driven&&el>=need&&el<540)fire(id+"p1","Pause erfüllt",`${need} min Fahrtunterbrechung erreicht. Weiterfahrt möglich.`,"go");
+    if(driven&&!before.half&&el>=15&&el<45&&pre)fire(id+"p15","15 min erledigt","Die erste Teilpause zählt. Später noch 30 min, oder jetzt bis 45 min weiter pausieren.","");
+    if(el>=540&&el<660)fire(id+"r9","9 h Ruhe erreicht","Verkürzte Tagesruhe erfüllt. Für eine regelmäßige Tagesruhe noch 2 h.","go");
+    if(el>=660&&el<1440)fire(id+"r11","11 h Ruhe erreicht","Regelmäßige Tagesruhe erfüllt.","go");
+    if(el>=1440&&el<2700)fire(id+"w24","24 h Ruhe erreicht","Verkürzte Wochenruhe erfüllt. Regelmäßig sind 45 h.","go");
+    if(el>=2700)fire(id+"w45","45 h Ruhe erreicht","Regelmäßige Wochenruhe erfüllt.","go");
+  }
+}
+async function updateWake(){
+  const want=AL().alWake&&!document.hidden&&DB.events.length&&DB.events[DB.events.length-1].type==="drive";
+  try{if(want&&!wakeLock&&navigator.wakeLock){wakeLock=await navigator.wakeLock.request("screen");wakeLock.addEventListener("release",()=>wakeLock=null)}
+      if(!want&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}
+}
+function alStateText(){const el=$("alState");if(!el)return;
+  const p=!("Notification" in window)?"Dieses Gerät unterstützt keine Systembenachrichtigungen. Ton, Vibration und Banner funktionieren trotzdem."
+    :Notification.permission==="granted"?"Benachrichtigungen sind erlaubt.":Notification.permission==="denied"?"Benachrichtigungen sind blockiert. Freigabe in den Handy-Einstellungen für Chrome bzw. die App.":"Benachrichtigungen noch nicht erlaubt.";
+  el.textContent=p+(navigator.wakeLock?"":" Bildschirm-Anlassen wird von diesem Gerät nicht unterstützt.");
+  $("alPerm").hidden=!("Notification" in window)||Notification.permission!=="default";
+}
+["alOn","alSound","alWake"].forEach(id=>$(id).onchange=e=>{DB.settings[id]=e.target.checked;saveDB();renderSettings();updateWake();if(e.target.checked)unlockAudio()});
+$("alPre").onchange=e=>{DB.settings.alPre=e.target.value;saveDB()};
+$("alPerm").onclick=()=>{unlockAudio();if("Notification" in window)Notification.requestPermission().then(()=>alStateText())};
+$("alTest").onclick=()=>{unlockAudio();setTimeout(()=>notify("Signal-Test","So klingt ein Hinweis der App.","stop"),150)};
+document.addEventListener("pointerdown",unlockAudio,{once:true});
 
 /* Tätigkeit wechseln */
 document.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
@@ -630,6 +724,7 @@ document.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
   if(cur&&cur.start>=now){cur.type=type;cur.out=false;cur.ferry=false}   // gleiche Minute: ersetzen
   else DB.events.push({id:uid(),type,start:now,out:false,ferry:false});
   if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}
+  unlockAudio();$("alertBar").hidden=true;setTimeout(()=>{updateWake();checkAlerts()},50);
   commit();toast(T[type]+" ab "+hm(now));
 });
 
@@ -693,7 +788,8 @@ loadDB();render();
 (function(){const s=$("splash");let done=false;const hide=()=>{if(done)return;done=true;s.classList.add("out");setTimeout(()=>s.remove(),500)};
   s.addEventListener("click",hide);setTimeout(hide,matchMedia("(prefers-reduced-motion: reduce)").matches?1200:2200)})();
 setInterval(()=>{if(view==="today"||view==="log")render()},30000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
+setInterval(checkAlerts,15000);setTimeout(checkAlerts,3000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();checkAlerts()}updateWake()});
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 </script>

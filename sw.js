@@ -1,6 +1,6 @@
 // Offline-Betrieb: App-Dateien werden zwischengespeichert.
 // Bei jedem Update die Versionsnummer erhöhen, dann holen sich alle Handys die neue Fassung.
-const CACHE = "fahrerprotokoll-v4";
+const CACHE = "fahrerprotokoll-v5";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./logo-full.png"];
 
 self.addEventListener("install", e => {
@@ -19,4 +19,13 @@ self.addEventListener("fetch", e => {
       .then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return res; })
       .catch(() => caches.match(e.request).then(r => r || caches.match("./index.html")))
   );
+});
+
+// Tippen auf eine Benachrichtigung öffnet die App
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+    for (const c of list) { if ("focus" in c) return c.focus(); }
+    return self.clients.openWindow("./");
+  }));
 });
