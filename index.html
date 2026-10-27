@@ -108,6 +108,22 @@ nav button[aria-current="page"]{color:var(--accent);background:var(--soft);box-s
 .rule{display:flex;gap:10px;padding:9px 11px;border-radius:6px;background:var(--soft);font-size:.92rem}
 .rule small{display:block;color:var(--muted);font:500 .7rem var(--mono)}
 
+/* Bußgeld */
+.fine{margin-top:8px;padding:8px 10px;border-radius:6px;background:var(--surface);border-left:4px solid var(--orange);font-size:.86rem}
+.fine-row{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:4px}
+.fine-row span{display:flex;flex-direction:column}
+.fine-row b{font:700 1.05rem var(--mono)}
+.fine-row small{font:500 .72rem var(--mono);color:var(--muted);margin:0}
+.finesum{border-top:5px solid var(--orange)}
+.fsum{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fsum>div{background:var(--soft);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column}
+.fsum .k{font:700 .7rem var(--body);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.fsum b{font:700 1.6rem var(--mono);font-variant-numeric:tabular-nums}
+.mswitch{display:inline-grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--soft);border-radius:8px;padding:3px}
+.mswitch button{border:0;background:none;color:var(--fg);font:700 .82rem var(--body);border-radius:6px;padding:6px 10px;cursor:pointer}
+.mswitch button[aria-pressed="true"]{background:var(--brand);color:#fff}
+@media (prefers-color-scheme:dark){.mswitch button[aria-pressed="true"]{color:#0d1420}}
+
 /* Protokoll */
 .dayhead{font:700 .8rem var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 0 4px}
 .strip{position:relative;height:22px;background:var(--soft);border-radius:3px;overflow:hidden;margin-bottom:6px}
@@ -188,6 +204,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <section id="v-eval" hidden>
     <div style="display:flex;flex-direction:column;gap:16px">
       <h1>Auswertung</h1>
+      <div class="panel finesum" id="fineBox" hidden></div>
       <div class="panel"><h2>Regelübersicht</h2><div class="rules" id="rules"></div></div>
       <div class="panel"><h2>Alle Befunde</h2><ul class="issues" id="issues"></ul></div>
       <div class="panel"><h2>Schichten</h2><div class="tbl"><table><thead><tr><th>Beginn</th><th>Ende</th><th>Lenken</th><th>Arbeit</th><th>Pausen</th><th>Ruhe danach</th></tr></thead><tbody id="shifts"></tbody></table></div></div>
@@ -203,6 +220,11 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
         <h2>Betrieb</h2>
         <label class="check"><input type="checkbox" id="multi"> Mehrfahrerbetrieb</label>
         <p class="small muted" style="margin:0">Dann gilt 9 h Tagesruhe innerhalb von 30 h, und Bereitschaft als Beifahrer zählt als Fahrtunterbrechung.</p>
+      </div>
+      <div class="panel">
+        <h2>Profi-Ansicht</h2>
+        <label class="check"><input type="checkbox" id="pro"> Bußgelder nach LV 48 anzeigen</label>
+        <p class="small muted" style="margin:0">Zeigt bei Verstößen gegen die Lenk- und Ruhezeiten den Regelsatz aus dem Buß- und Verwarnungsgeldkatalog LV 48, getrennt für Fahrer und Unternehmer, sowie eine Summe in der Auswertung.</p>
       </div>
       <div class="panel">
         <h2>Ausgangslage vor dem ersten Eintrag</h2>
@@ -258,7 +280,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <p class="mail"><a href="mailto:David.Buenger@mail.de">David.Buenger@mail.de</a><button id="copyMail">Kopieren</button></p>
   <h2 id="infoTitle">Fahrerprotokoll</h2>
   <p style="margin:0">Erfassung und Prüfung von Lenk- und Ruhezeiten nach VO (EG) 561/2006 und Arbeitszeitgesetz. Entwickelt von David Bünger, Dozent für Verkehrs- und Fahrpersonalrecht.</p>
-  <p class="small muted" style="margin:0">Version 1.2. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
+  <p class="small muted" style="margin:0">Version 1.3. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
   <p style="margin:0;font-weight:600">© <span class="year">2026</span> David Bünger. Alle Rechte vorbehalten.</p>
   <div class="btns" style="justify-content:flex-end"><button class="btn primary" id="infoClose">Schließen</button></div>
 </div></div>
@@ -293,6 +315,9 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <details><summary>Daten sichern und Handywechsel</summary>
     <p>Alles bleibt nur auf deinem Handy. Tipp regelmäßig unter <b>Einstellungen</b> auf <b>Sicherung speichern</b>. Auf einem neuen Handy installierst du die App und tippst auf <b>Sicherung laden</b>.</p>
     <p>Achtung: Wer die Browserdaten von Chrome löscht, löscht auch das Protokoll.</p></details>
+  <details><summary>Profi-Ansicht: Bußgelder nach LV 48</summary>
+    <p>Unter <b>Einstellungen → Profi-Ansicht</b> einschalten. Dann steht bei jedem Verstoß der Regelsatz aus dem Buß- und Verwarnungsgeldkatalog LV 48, getrennt für Fahrer und Unternehmer. In der Auswertung siehst du die Summe und kannst zwischen Vorsatz und Fahrlässigkeit umschalten.</p>
+    <p>Die Beträge sind eine Orientierung. Die Behörde entscheidet im Einzelfall.</p></details>
   <details><summary>Mehrfahrerbetrieb</summary>
     <p>Unter <b>Einstellungen</b> einschalten. Dann gilt 9 h Tagesruhe innerhalb von 30 h, und deine Zeit als Beifahrer (Bereitschaft) zählt als Fahrtunterbrechung.</p></details>
   <details><summary>App installieren</summary>
@@ -310,7 +335,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
 "use strict";
 /* ================= Speicher ================= */
 const KEY="fahrerprotokoll-v1";
-let DB={events:[],settings:{multi:false,prevWeek:"",weekBefore:"",tenBefore:"0",lastReduced:false}};
+let DB={events:[],settings:{multi:false,prevWeek:"",weekBefore:"",tenBefore:"0",lastReduced:false,pro:false,culpa:"vorsatz"}};
 function loadDB(){try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&Array.isArray(s.events))DB={events:s.events,settings:{...DB.settings,...(s.settings||{})}}}catch(e){}}
 function saveDB(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast("Speichern fehlgeschlagen")}}
 const sortEv=()=>DB.events.sort((a,b)=>a.start-b.start);
@@ -344,7 +369,7 @@ const RULES=[["art7","Fahrtunterbrechung","Art. 7"],["art6d","Tageslenkzeit","Ar
 function analyze(events,opt){
   const start=events.length?events[0].start:nowMin();
   const {multi,prevWeek,weekBefore,tenBefore,lastReduced:lastRedIn,now}=opt;
-  const issues=[];const add=(rule,sev,title,text,at)=>issues.push({rule,sev,title,text,at});
+  const issues=[];const add=(rule,sev,title,text,at,fine)=>{const o={rule,sev,title,text,at,fine};issues.push(o);return o};
   const S=[];
   events.forEach((ev,i)=>{const e=i+1<events.length?events[i+1].start:Math.max(now,ev.start);const d=e-ev.start;
     if(d>0)S.push({id:ev.id,type:ev.type,out:ev.type==="drive"&&!!ev.out,ferry:ev.type==="rest"&&!!ev.ferry,s:ev.start,e,d,over:null,open:i+1===events.length})});
@@ -357,34 +382,35 @@ function analyze(events,opt){
     if(it.kind==="rest"&&it.ferry){ferryUsed=true;const m={...it,segs:[...it.segs],interrupts:[]};let j=i+1;
       while(j<raw.length){let k=j,acts=[];while(k<raw.length&&raw[k].kind==="act"){acts.push(raw[k].seg);k++}
         if(!acts.length||k>=raw.length||!raw[k].ferry)break;const a=acts.reduce((x,s)=>x+s.d,0);
-        if(m.intCount+1>2||m.intTotal+a>60){add("art9","bad","Ruhe auf Fähre/Zug zu oft oder zu lange unterbrochen",`Erlaubt sind höchstens zwei Unterbrechungen von zusammen höchstens 1 Stunde. Hier wären es ${m.intCount+1} mit ${fmt(m.intTotal+a)} h.`,acts[0].s);break}
+        if(m.intCount+1>2||m.intTotal+a>60){add("art9","bad","Ruhe auf Fähre/Zug zu oft oder zu lange unterbrochen",`Erlaubt sind höchstens zwei Unterbrechungen von zusammen höchstens 1 Stunde. Hier wären es ${m.intCount+1} mit ${fmt(m.intTotal+a)} h.`,acts[0].s,{nr:null});break}
         m.intCount++;m.intTotal+=a;m.interrupts.push(...acts);m.segs.push(...raw[k].segs);m.len+=raw[k].len;m.e=raw[k].e;j=k+1}
       if(m.intCount>0){if(m.len>=660){items.push(m);i=j;
           add("art9","ok","Ruhezeit auf Fähre/Zug korrekt unterbrochen",`${m.intCount}× unterbrochen, zusammen ${fmt(m.intTotal)} h, Ruhe insgesamt ${fmt(m.len)} h. Voraussetzung: Zugang zu Schlafkabine oder Liegeplatz.`,m.s);
           if(m.len>=2700)add("art9","warn","Regelmäßige Wochenruhe auf Fähre/Zug","Nur zulässig bei einer planmäßigen Fahrt von mindestens 8 Stunden und Zugang zu einer Schlafkabine.",m.s);continue}
-        add("art9","bad","Unterbrechung nur bei regelmäßiger Ruhezeit zulässig",`Die Ruhe auf Fähre/Zug ergibt zusammen nur ${fmt(m.len)} h. Unterbrechen darf man nur eine regelmäßige Tagesruhe (mind. 11 h) oder eine Wochenruhe.`,m.s)}
+        add("art9","bad","Unterbrechung nur bei regelmäßiger Ruhezeit zulässig",`Die Ruhe auf Fähre/Zug ergibt zusammen nur ${fmt(m.len)} h. Unterbrechen darf man nur eine regelmäßige Tagesruhe (mind. 11 h) oder eine Wochenruhe.`,m.s,{nr:null})}
       items.push(it);i++;continue}
     items.push(it);i++}
 
   const win=multi?1800:1440,weeks=new Map(),shifts=[];
-  let dutyStart=start,lastWeeklyEnd=start,lastWeeklyReduced=lastRedIn,reducedCount=0,splitFirst=false,chain=0,half=false,chainFlagged=false,arbChain=0,arbFlag=false,weeklyOverdueFlag=false,
+  let dutyStart=start,lastWeeklyEnd=start,lastWeeklyReduced=lastRedIn,reducedCount=0,splitFirst=false,chain=0,half=false,chainFlagged=false,arbChain=0,arbFlag=false,weeklyOverdueFlag=false,chainIssue=null,weeklyIssue=null,
       duty={drive:0,arb:0,arbBreaks:0,night:false};
   const fw=weekStart(start);const tensByWeek=new Map([[fw,tenBefore]]);
-  const applyBreak=d=>{if(d>=45||(half&&d>=30)){chain=0;half=false;chainFlagged=false}else if(d>=15)half=true};
+  const applyBreak=d=>{if(d>=45||(half&&d>=30)){chain=0;half=false;chainFlagged=false;chainIssue=null}else if(d>=15)half=true};
   function actSeg(g){
     if(g.type==="drive"&&!g.out){const before=chain;chain+=g.d;duty.drive+=g.d;addWeek(weeks,g.s,g.e,"drive");
-      if(chain>270){g.over=g.s+Math.max(0,270-before);if(!chainFlagged){add("art7","bad","Fahrtunterbrechung fehlt",`Ab ${dt(g.over)} wird länger als 4:30 h ohne gültige Unterbrechung gelenkt. Nötig sind 45 min am Stück oder erst mind. 15, dann mind. 30 min.`,g.over);chainFlagged=true}}}
+      if(chain>270){g.over=g.s+Math.max(0,270-before);if(!chainFlagged){chainIssue=add("art7","bad","Fahrtunterbrechung fehlt",`Ab ${dt(g.over)} wird länger als 4:30 h ohne gültige Unterbrechung gelenkt. Nötig sind 45 min am Stück oder erst mind. 15, dann mind. 30 min.`,g.over,{nr:106,x:chain-270});chainFlagged=true}
+        else if(chainIssue)chainIssue.fine.x=Math.max(chainIssue.fine.x,chain-270)}}
     if(g.type==="drive"||g.type==="work"){duty.arb+=g.d;arbChain+=g.d;addWeek(weeks,g.s,g.e,"work");if(overlapNight(g.s,g.e))duty.night=true;
       if(arbChain>360&&!arbFlag){add("arbp","bad","Mehr als 6 h Arbeit ohne Ruhepause",`Ab ${dt(g.e-(arbChain-360))} wird länger als 6 Stunden ohne Pause von mind. 15 min gearbeitet.`,g.e);arbFlag=true}}
     if(g.type==="avail"&&multi)applyBreak(g.d);
-    if(g.e>lastWeeklyEnd+8640&&!weeklyOverdueFlag){add("art8w","bad","Wochenruhe überfällig",`Die Wochenruhe hätte spätestens ${dt(lastWeeklyEnd+8640)} beginnen müssen, also nach sechs 24-Stunden-Zeiträumen.`,lastWeeklyEnd+8640);weeklyOverdueFlag=true}
+    if(g.e>lastWeeklyEnd+8640&&!weeklyOverdueFlag){weeklyIssue=add("art8w","bad","Wochenruhe überfällig",`Die Wochenruhe hätte spätestens ${dt(lastWeeklyEnd+8640)} beginnen müssen, also nach sechs 24-Stunden-Zeiträumen.`,lastWeeklyEnd+8640,{nr:110,x:null,due:lastWeeklyEnd+8640});weeklyOverdueFlag=true}
   }
   function closeDuty(rest,kind){
     for(const g of rest.interrupts){if(g.type==="drive"&&!g.out){duty.drive+=g.d;addWeek(weeks,g.s,g.e,"drive")}if(g.type==="drive"||g.type==="work"){duty.arb+=g.d;addWeek(weeks,g.s,g.e,"work")}}
     const ws=weekStart(dutyStart);let tens=tensByWeek.get(ws)||0;
-    if(duty.drive>600)add("art6d","bad","Tageslenkzeit überschritten",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.drive)} h gelenkt, höchstens 10:00 h sind zulässig.`,dutyStart);
+    if(duty.drive>600)add("art6d","bad","Tageslenkzeit überschritten",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.drive)} h gelenkt, höchstens 10:00 h sind zulässig.`,dutyStart,tens>=2?{nr:102,x:duty.drive-540}:{nr:103,x:duty.drive-600});
     else if(duty.drive>540){tens++;tensByWeek.set(ws,tens);
-      if(tens>2)add("art6d","bad","Dritter 10-Stunden-Tag in der Woche",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.drive)} h. Die Verlängerung auf 10 h ist nur zweimal pro Kalenderwoche erlaubt.`,dutyStart);
+      if(tens>2)add("art6d","bad","Dritter 10-Stunden-Tag in der Woche",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.drive)} h. Die Verlängerung auf 10 h ist nur zweimal pro Kalenderwoche erlaubt.`,dutyStart,{nr:102,x:duty.drive-540});
       else add("art6d","warn","10-Stunden-Tag",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.drive)} h. Verlängerung Nr. ${tens} von 2 in dieser Kalenderwoche.`,dutyStart)}
     if(duty.arb>600)add("arbd","bad","Tägliche Arbeitszeit über 10 h",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.arb)} h Arbeitszeit. Höchstens 10 h${duty.night?", bei Nachtarbeit ausdrücklich nach § 21a Abs. 4":""}.`,dutyStart);
     else if(duty.arb>480)add("arbd","warn","Arbeitszeit über 8 h",`Schicht ab ${dt(dutyStart)}: ${fmt(duty.arb)} h. Zulässig bis 10 h, wenn im Durchschnitt 8 h werktäglich eingehalten werden.`,dutyStart);
@@ -392,37 +418,53 @@ function analyze(events,opt){
     if(duty.arbBreaks<need)add("arbp","bad","Zu wenig Ruhepausen",`Schicht ab ${dt(dutyStart)}: Bei ${fmt(duty.arb)} h Arbeitszeit sind ${need} min Pause nötig (Abschnitte ab 15 min), vorhanden ${duty.arbBreaks} min.`,dutyStart);
     shifts.push({start:dutyStart,end:rest.s,drive:duty.drive,arb:duty.arb,breaks:duty.arbBreaks,night:duty.night,kind,restLen:rest.len,ferry:rest.intCount>0||rest.ferry,openRest:rest.segs[rest.segs.length-1].open});
   }
+  /* Vorlauf: Welche Ruhe gilt als Tagesruhe? Liegt im 24-h- (30-h-)Zeitraum keine ausreichende Ruhe,
+     zählt – wie bei einer Kontrolle – die längste Ruhe in diesem Zeitraum als (zu kurze) Tagesruhe. */
+  const bound=new Map();
+  {const ri=items.map((it,i)=>it.kind==="rest"?i:-1).filter(i=>i>=0);let ds=start,guard=0;
+   while(guard++<1000){const dl=ds+win;
+     const j=ri.find(i=>items[i].s>=ds&&items[i].len>=540);
+     if(j!==undefined){const it=items[j];if(Math.min(it.e,dl)-it.s>=540){bound.set(it,{short:false});ds=it.e;continue}}
+     if(j===undefined&&end<=dl)break;
+     let best=null,bl=0;for(const i of ri){const it=items[i];if(it.s<ds||it.s>=dl)continue;const l=Math.min(it.e,dl)-it.s;if(l>bl){bl=l;best=it}}
+     if(best&&bl>=60){bound.set(best,{short:true});ds=best.e;continue}
+     if(j!==undefined){bound.set(items[j],{short:true});ds=items[j].e;continue}
+     break}}
   for(const it of items){
     if(it.kind==="act"){actSeg(it.seg);continue}
     const L=it.len;
-    if(L<540){applyBreak(L);if(L>=15){duty.arbBreaks+=L;arbChain=0;arbFlag=false}if(L>=180)splitFirst=true;continue}
-    const deadline=dutyStart+win,within=Math.min(it.e,deadline)-it.s;let kind;
-    if(within<540){add("art8d","bad","Tagesruhe nicht rechtzeitig",`Nach dem Ende der letzten Ruhezeit (${dt(dutyStart)}) muss innerhalb von ${multi?30:24} h eine Tagesruhe von mind. 9 h liegen. Sie hätte spätestens ${dt(deadline-540)} beginnen müssen, begann aber ${dt(it.s)}.`,it.s);kind="zu spät"}
+    if(L<540&&!bound.has(it)){applyBreak(L);if(L>=15){duty.arbBreaks+=L;arbChain=0;arbFlag=false}if(L>=180)splitFirst=true;continue}
+    const deadline=dutyStart+win,within=Math.min(it.e,deadline)-it.s;let kind;const bd=bound.get(it);
+    if(bd&&bd.short&&L<540){const req=(multi||reducedCount<3)?540:660,got=Math.max(0,Math.min(L,within));
+      add("art8d","bad","Tagesruhe zu kurz",`Innerhalb von ${multi?30:24} h nach ${dt(dutyStart)} lag als längste Ruhe nur ${fmt(got)} h (ab ${dt(it.s)}). Nötig sind mindestens ${req===660?"11":"9"} h.`,it.s,{nr:108,x:req-got});kind="zu kurz"}
+    else if(within<540){add("art8d","bad","Tagesruhe nicht rechtzeitig",`Nach dem Ende der letzten Ruhezeit (${dt(dutyStart)}) muss innerhalb von ${multi?30:24} h eine Tagesruhe von mind. 9 h liegen. Sie hätte spätestens ${dt(deadline-540)} beginnen müssen, begann aber ${dt(it.s)}.`,it.s,{nr:108,x:(multi||reducedCount<3?540:660)-Math.max(0,within)});kind="zu spät"}
     else if(multi)kind="Tagesruhe (Mehrfahrer)";
     else if(splitFirst)kind="aufgeteilt 3 + 9 h";
     else if(within>=660)kind="regelmäßig";
     else{const running=it.segs[it.segs.length-1].open&&it.e<deadline;
       kind=running?"läuft":"verkürzt";
       if(!running){reducedCount++;
-        if(reducedCount>3)add("art8r","bad","Mehr als drei verkürzte Tagesruhen",`Die verkürzte Tagesruhe ab ${dt(it.s)} ist bereits die ${reducedCount}. seit der letzten Wochenruhe. Erlaubt sind höchstens drei.`,it.s);
+        if(reducedCount>3)add("art8r","bad","Mehr als drei verkürzte Tagesruhen",`Die verkürzte Tagesruhe ab ${dt(it.s)} ist bereits die ${reducedCount}. seit der letzten Wochenruhe. Erlaubt sind höchstens drei.`,it.s,{nr:108,x:660-Math.min(L,within)});
         else add("art8r","warn","Verkürzte Tagesruhe",`Ab ${dt(it.s)}: ${fmt(Math.min(L,within))} h. Das ist Nr. ${reducedCount} von höchstens 3 bis zur nächsten Wochenruhe.`,it.s)}}
     if(L>=1440){const reg=L>=2700;const running=it.segs[it.segs.length-1].open;
       kind=reg?"Wochenruhe regelmäßig":running?"Wochenruhe läuft":"Wochenruhe verkürzt";
-      if(it.s>lastWeeklyEnd+8640&&!weeklyOverdueFlag)add("art8w","bad","Wochenruhe zu spät begonnen",`Begonnen ${dt(it.s)}, spätestens wäre ${dt(lastWeeklyEnd+8640)} gewesen.`,it.s);
+      if(it.s>lastWeeklyEnd+8640&&!weeklyOverdueFlag)add("art8w","bad","Wochenruhe zu spät begonnen",`Begonnen ${dt(it.s)}, spätestens wäre ${dt(lastWeeklyEnd+8640)} gewesen.`,it.s,{nr:110,x:it.s-(lastWeeklyEnd+8640)});
+      if(weeklyIssue&&weeklyIssue.fine.x==null){weeklyIssue.fine.x=it.s-weeklyIssue.fine.due;weeklyIssue=null}
       if(!reg&&!running){add("art8w","warn","Verkürzte Wochenruhe",`${fmt(L)} h ab ${dt(it.s)}. Die fehlenden ${fmt(2700-L)} h müssen vor Ende der dritten Folgewoche am Stück ausgeglichen werden, angehängt an eine Ruhezeit von mind. 9 h.`,it.s);
-        if(lastWeeklyReduced)add("art8w","bad","Zwei verkürzte Wochenruhen nacheinander","In zwei aufeinanderfolgenden Wochen braucht es mindestens eine regelmäßige Wochenruhe. Ausnahme nur im grenzüberschreitenden Güterverkehr nach Art. 8 Abs. 6.",it.s)}
+        if(lastWeeklyReduced)add("art8w","bad","Zwei verkürzte Wochenruhen nacheinander","In zwei aufeinanderfolgenden Wochen braucht es mindestens eine regelmäßige Wochenruhe. Ausnahme nur im grenzüberschreitenden Güterverkehr nach Art. 8 Abs. 6.",it.s,{nr:111,x:2700-L})}
       lastWeeklyReduced=!reg&&!running;lastWeeklyEnd=it.e;reducedCount=0;weeklyOverdueFlag=false}
     closeDuty(it,kind);
-    dutyStart=it.e;chain=0;half=false;chainFlagged=false;splitFirst=false;arbChain=0;arbFlag=false;duty={drive:0,arb:0,arbBreaks:0,night:false};
+    dutyStart=it.e;chain=0;half=false;chainFlagged=false;chainIssue=null;splitFirst=false;arbChain=0;arbFlag=false;duty={drive:0,arb:0,arbBreaks:0,night:false};
   }
   const lastItem=items[items.length-1];const inRest=!!(lastItem&&lastItem.kind==="rest"&&lastItem.len>=540);
-  if(!inRest&&end>dutyStart+win)add("art8d","bad","Tagesruhe überfällig",`Seit ${dt(dutyStart)} fehlt eine Tagesruhe. Sie hätte spätestens ${dt(dutyStart+win-540)} beginnen müssen.`,dutyStart+win-540);
+  if(!inRest&&end>dutyStart+win)add("art8d","bad","Tagesruhe überfällig",`Seit ${dt(dutyStart)} fehlt eine Tagesruhe. Sie hätte spätestens ${dt(dutyStart+win-540)} beginnen müssen.`,dutyStart+win-540,{nr:108,x:null,pending:true});
+  if(weeklyIssue&&weeklyIssue.fine.x==null){weeklyIssue.fine.x=end-weeklyIssue.fine.due;weeklyIssue.fine.sofar=true}
   if(!weeks.has(fw))weeks.set(fw,{drive:0,work:0,tens:0});weeks.get(fw).drive+=weekBefore;
   const wrows=[];
   for(const k of [...weeks.keys()].sort((a,b)=>a-b)){const w=weeks.get(k);w.tens=tensByWeek.get(k)||0;
     const pw=weeks.get(weekStart(k-60));const prev=pw?pw.drive:(k===fw?prevWeek:null);const dbl=prev==null?null:prev+w.drive;
-    if(w.drive>3360)add("art6w","bad","Wochenlenkzeit überschritten",`KW ${isoWeek(k)}: ${fmt(w.drive)} h, zulässig sind 56:00 h.`,k);
-    if(dbl!=null&&dbl>5400)add("art6dw","bad","Doppelwoche überschritten",`KW ${isoWeek(k)} und Vorwoche: ${fmt(dbl)} h, zulässig sind 90:00 h.`,k);
+    if(w.drive>3360)add("art6w","bad","Wochenlenkzeit überschritten",`KW ${isoWeek(k)}: ${fmt(w.drive)} h, zulässig sind 56:00 h.`,k,{nr:104,x:w.drive-3360});
+    if(dbl!=null&&dbl>5400)add("art6dw","bad","Doppelwoche überschritten",`KW ${isoWeek(k)} und Vorwoche: ${fmt(dbl)} h, zulässig sind 90:00 h.`,k,{nr:105,x:dbl-5400});
     if(w.work>3600)add("arbw","bad","Wochenarbeitszeit über 60 h",`KW ${isoWeek(k)}: ${fmt(w.work)} h.`,k);
     else if(w.work>2880)add("arbw","warn","Wochenarbeitszeit über 48 h",`KW ${isoWeek(k)}: ${fmt(w.work)} h. Zulässig bis 60 h, wenn im Schnitt von 4 Monaten oder 16 Wochen 48 h nicht überschritten werden.`,k);
     wrows.push({k,...w,dbl})}
@@ -435,13 +477,65 @@ function analyze(events,opt){
   return {S,issues,shifts,wrows,status,ferryUsed,start,end};
 }
 
+/* ================= Bußgeld-Regelsätze LV 48 (4. Auflage 2018) =================
+   Regelsätze gelten für Vorsatz, eine betroffene Person. Staffeln: Die gesamte Über- bzw.
+   Unterschreitung wird in angefangenen Einheiten gezählt und mit dem Satz der erreichten Stufe
+   multipliziert (so auch Beispiel 1 der LV 48: 2 h über 10 h → 4 × ½ h × 90 € = 360 € Spalte U). */
+const LV48={
+  102:{t:"Tägliche Lenkzeit 9 h überschritten",v:"Art. 6 Abs. 1 S. 1"},
+  103:{t:"Tägliche Lenkzeit 10 h überschritten",v:"Art. 6 Abs. 1 S. 2"},
+  104:{t:"Wöchentliche Lenkzeit 56 h überschritten",v:"Art. 6 Abs. 2"},
+  105:{t:"Lenkzeit in der Doppelwoche 90 h überschritten",v:"Art. 6 Abs. 3"},
+  106:{t:"Fahrtunterbrechung nicht rechtzeitig",v:"Art. 7"},
+  108:{t:"Tägliche Ruhezeit unterschritten",v:"Art. 8 Abs. 2, 5"},
+  110:{t:"Wöchentliche Ruhezeit nicht rechtzeitig",v:"Art. 8 Abs. 6"},
+  111:{t:"Regelmäßige wöchentliche Ruhezeit unterschritten",v:"Art. 8 Abs. 6"}
+};
+const up=(x,u)=>Math.max(1,Math.ceil(x/u-1e-9));
+const st=(n,u,r)=>({a:n*r,c:`${n} × ${u} à ${r} €`});
+const flat=(r,txt)=>({a:r,c:txt});
+function lv48(nr,x){
+  const H="½ h",S="Std.",D="24-h-Zeitraum";
+  switch(nr){
+    case 102:return{F:x<=60?flat(30,"bis 60 min"):x<=120?st(up(x,30),H,30):st(up(x,30),H,60),U:x<=120?st(up(x,30),H,90):st(up(x,30),H,180)};
+    case 103:return{F:x<=30?flat(30,"bis 30 min"):x<=120?st(up(x,30),H,30):st(up(x,30),H,60),U:x<=120?st(up(x,30),H,90):st(up(x,30),H,180)};
+    case 104:return{F:x<=120?flat(30,"bis 2 h"):x<=540?st(up(x,60),S,30):st(up(x,60),S,60),U:x<=540?st(up(x,60),S,90):st(up(x,60),S,180)};
+    case 105:return{F:x<=120?flat(30,"bis 2 h"):x<=900?st(up(x,60),S,30):st(up(x,60),S,60),U:x<=900?st(up(x,60),S,90):st(up(x,60),S,180)};
+    case 106:{const k=x>60?up(x-60,30):0;return{F:{a:30+k*30,c:k?`30 € bis 1 h + ${k} × ½ h à 30 €`:"bis 60 min"},U:{a:90+k*90,c:k?`90 € bis 1 h + ${k} × ½ h à 90 €`:"bis 1 h"}}}
+    case 108:return{F:x<=60?flat(30,"bis 1 h"):x<=180?st(up(x,60),S,30):st(up(x,60),S,60),U:x<=180?st(up(x,60),S,90):st(up(x,60),S,180)};
+    case 110:{const k=x>1440?up(x-1440,1440):0;
+      return{F:x<=180?flat(30,"bis 3 h"):x<=720?flat(60,"3 bis 12 h"):x<=1440?flat(90,"12 bis 24 h"):{a:90+k*90,c:`90 € + ${k} × ${D} à 90 €`},
+             U:x<=180?{a:null,c:"unter 3 h kein Regelsatz"}:x<=720?flat(180,"3 bis 12 h"):x<=1440?flat(270,"12 bis 24 h"):{a:270+k*270,c:`270 € + ${k} × ${D} à 270 €`}}}
+    case 111:return{F:x<=540?st(up(x,60),S,30):st(up(x,60),S,60),U:x<=540?st(up(x,60),S,90):st(up(x,60),S,180)};
+  }
+  return null;
+}
+const proOn=()=>!!DB.settings.pro, fahrl=()=>DB.settings.culpa==="fahrl";
+const eur=a=>a.toLocaleString("de-DE")+" €";
+function fineFor(f){ // → {F,U,nr,…} mit Vorsatz/Fahrlässigkeit und Verwarnungsgrenze
+  if(!f)return null;
+  if(f.nr==null)return{none:true};
+  if(f.pending||f.x==null)return{nr:f.nr,pending:true};
+  if(f.x<=0)return null;
+  const r=lv48(f.nr,f.x);if(!r)return null;
+  const adj=o=>{if(o.a==null)return{...o,label:"–"};let a=fahrl()?Math.ceil(o.a/2):o.a;return{...o,a,warn:a<=55}};
+  return{nr:f.nr,x:f.x,sofar:f.sofar,F:adj(r.F),U:adj(r.U)};
+}
+function fineHtml(f){
+  const z=fineFor(f);if(!z||!proOn())return"";
+  if(z.none)return`<div class="fine"><b>LV 48:</b> kein Regelsatz für diesen Verstoß.</div>`;
+  if(z.pending)return`<div class="fine"><b>LV 48 Nr. ${z.nr}:</b> Betrag steht erst fest, wenn die Ruhezeit beginnt.</div>`;
+  const cell=(o,who)=>o.a==null?`<span>${who}: ${o.c}</span>`:`<span>${who}: <b>${eur(o.a)}</b>${o.warn?" (Verwarnungsgeld)":""}<small>${o.c}${fahrl()?", halbiert":""}</small></span>`;
+  return`<div class="fine"><b>LV 48 Nr. ${z.nr}</b> · ${LV48[z.nr].t} · ${z.x>=60?fmt(z.x)+" h":z.x+" min"}${z.sofar?" bis jetzt":""}<div class="fine-row">${cell(z.F,"Fahrer")}${cell(z.U,"Unternehmer")}</div></div>`;
+}
+
 /* ================= Oberfläche ================= */
 const $=id=>document.getElementById(id);
 let view="today",R=null,editId=null;
 function opts(){const s=DB.settings;return{multi:!!s.multi,prevWeek:parseDur(s.prevWeek),weekBefore:parseDur(s.weekBefore)||0,tenBefore:+s.tenBefore||0,lastReduced:!!s.lastReduced,now:nowMin()}}
 function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
 const pillLbl={ok:"OK",warn:"Hinweis",bad:"Verstoß",na:"entfällt"};
-const issueLi=x=>`<li><span class="pill ${x.sev}">${pillLbl[x.sev]}</span><div><strong>${x.title}</strong><br>${x.text}<small>${RULES.find(r=>r[0]===x.rule)[2]}</small></div></li>`;
+const issueLi=x=>`<li><span class="pill ${x.sev}">${pillLbl[x.sev]}</span><div><strong>${x.title}</strong><br>${x.text}<small>${RULES.find(r=>r[0]===x.rule)[2]}</small>${fineHtml(x.fine)}</div></li>`;
 
 function renderToday(){
   const cur=DB.events[DB.events.length-1];const st=R.status;const now=nowMin();
@@ -492,23 +586,37 @@ function renderLog(){
   $("log").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEdit(b.dataset.edit));
 }
 
+function renderFineBox(){
+  const box=$("fineBox");box.hidden=!proOn();if(!proOn())return;
+  const zs=R.issues.map(i=>fineFor(i.fine)).filter(z=>z&&!z.none&&!z.pending);
+  const sum=k=>zs.reduce((s,z)=>s+(z[k].a||0),0);
+  const open=R.issues.filter(i=>{const z=fineFor(i.fine);return z&&(z.none||z.pending)}).length;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2>Bußgeld-Orientierung LV 48</h2>
+    <div class="mswitch" id="culpa"><button data-c="vorsatz" aria-pressed="${!fahrl()}">Vorsatz</button><button data-c="fahrl" aria-pressed="${fahrl()}">Fahrlässig</button></div></div>
+    ${zs.length?`<div class="fsum"><div><span class="k">Fahrer</span><b>${eur(sum("F"))}</b></div><div><span class="k">Unternehmer</span><b>${eur(sum("U"))}</b></div></div>
+    <p class="small muted" style="margin:0">${zs.length} ${zs.length>1?"Verstöße":"Verstoß"} mit Regelsatz, als Tatmehrheit addiert.${open?` ${open} weitere${open>1?"":"r"} ohne Betrag.`:""} ${fahrl()?"Fahrlässig: Regelsätze halbiert.":"Regelsätze für Vorsatz."}</p>`
+    :`<p class="small muted" style="margin:0">Keine Verstöße mit Regelsatz im Protokoll.${open?` ${open} ${open>1?"Verstöße":"Verstoß"} ohne Betrag.`:""}</p>`}
+    <p class="small muted" style="margin:0">Unverbindliche Orientierung nach den Regelsätzen der LV 48 (4. Auflage 2018). Die Bußgeldbehörde entscheidet im Einzelfall, auch über Tateinheit, Vorbelastungen und Ermäßigungen.</p>`;
+  box.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{DB.settings.culpa=b.dataset.c;commit()});
+}
 function renderEval(){
   $("rules").innerHTML=RULES.map(([k,name,src])=>{const xs=R.issues.filter(x=>x.rule===k);
     let s=xs.some(x=>x.sev==="bad")?"bad":xs.some(x=>x.sev==="warn")?"warn":"ok";
     if(k==="art9"&&!R.ferryUsed)s="na";if(k==="art6dw"&&R.wrows.every(w=>w.dbl==null))s="na";if(!DB.events.length)s="na";
     return `<div class="rule"><span class="pill ${s}">${pillLbl[s]}</span><div>${name}<small>${src}</small></div></div>`}).join("");
+  renderFineBox();
   const list=[...R.issues].sort((a,b)=>b.at-a.at);
   $("issues").innerHTML=list.length?list.map(issueLi).join(""):`<li><span class="pill ok">OK</span><div>Keine Verstöße oder Besonderheiten gefunden.</div></li>`;
   $("shifts").innerHTML=R.shifts.slice().reverse().map(s=>`<tr><td>${dt(s.start)}${s.night?" · Nacht":""}</td><td>${dt(s.end)}</td>
     <td><span class="${s.drive>600?"bad":s.drive>540?"warn":""}">${fmt(s.drive)}</span></td><td><span class="${s.arb>600?"bad":s.arb>480?"warn":""}">${fmt(s.arb)}</span></td>
-    <td>${fmt(s.breaks)}</td><td>${fmt(s.restLen)} · <span class="${s.kind==="zu spät"?"bad":s.kind.includes("verkürzt")?"warn":""}">${s.kind}</span>${s.ferry?" · Fähre":""}</td></tr>`).join("")
+    <td>${fmt(s.breaks)}</td><td>${fmt(s.restLen)} · <span class="${s.kind.startsWith("zu ")?"bad":s.kind.includes("verkürzt")?"warn":""}">${s.kind}</span>${s.ferry?" · Fähre":""}</td></tr>`).join("")
     ||`<tr><td colspan="6">Noch keine abgeschlossene Schicht. Eine Schicht endet mit einer Ruhezeit ab 9 h.</td></tr>`;
   $("weeks").innerHTML=R.wrows.slice().reverse().map(w=>`<tr><td>KW ${isoWeek(w.k)} · ${dd(w.k)}</td><td><span class="${w.drive>3360?"bad":""}">${fmt(w.drive)}</span> / 56</td>
     <td>${w.dbl==null?"–":`<span class="${w.dbl>5400?"bad":""}">${fmt(w.dbl)}</span> / 90`}</td><td><span class="${w.tens>2?"bad":""}">${w.tens}</span> / 2</td>
     <td><span class="${w.work>3600?"bad":w.work>2880?"warn":""}">${fmt(w.work)}</span></td></tr>`).join("");
 }
 
-function renderSettings(){const s=DB.settings;$("multi").checked=!!s.multi;$("prevWeek").value=s.prevWeek||"";$("weekBefore").value=s.weekBefore||"";$("tenBefore").value=s.tenBefore||"0";$("lastReduced").checked=!!s.lastReduced;
+function renderSettings(){const s=DB.settings;$("multi").checked=!!s.multi;$("prevWeek").value=s.prevWeek||"";$("weekBefore").value=s.weekBefore||"";$("tenBefore").value=s.tenBefore||"0";$("lastReduced").checked=!!s.lastReduced;$("pro").checked=!!s.pro;
   $("storageInfo").textContent=`${DB.events.length} Einträge gespeichert.`}
 
 function render(){sortEv();R=analyze(DB.events,opts());
@@ -544,7 +652,7 @@ $("eDel").onclick=()=>{if($("eDel").dataset.armed){DB.events=DB.events.filter(e=
 $("addEntry").onclick=()=>openEdit(null);
 
 /* Einstellungen */
-["multi","lastReduced"].forEach(id=>$(id).onchange=e=>{DB.settings[id]=e.target.checked;commit()});
+["multi","lastReduced","pro"].forEach(id=>$(id).onchange=e=>{DB.settings[id]=e.target.checked;commit();if(id==="pro")toast(e.target.checked?"Profi-Ansicht an":"Profi-Ansicht aus")});
 ["prevWeek","weekBefore"].forEach(id=>$(id).oninput=e=>{DB.settings[id]=e.target.value;saveDB();R=analyze(DB.events,opts())});
 $("tenBefore").onchange=e=>{DB.settings.tenBefore=e.target.value;commit()};
 $("export").onclick=()=>{const blob=new Blob([JSON.stringify({app:"fahrerprotokoll",version:1,exported:new Date().toISOString(),...DB},null,1)],{type:"application/json"});
