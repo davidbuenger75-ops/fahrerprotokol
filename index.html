@@ -85,6 +85,24 @@ nav button[aria-current="page"]{color:var(--accent);background:var(--soft);box-s
 .now{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid rgba(216,245,228,.15);padding-bottom:12px}
 .now .act{font:700 1.6rem var(--head);letter-spacing:.02em}
 .now .run{font:700 1.8rem var(--mono);font-variant-numeric:tabular-nums}
+/* Heute: zwei Hauptwerte, Rest klein */
+.hero{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.hcard{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.hcard .k{opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcard .huge{font:700 2.5rem/1.05 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hcard .why{font:600 .82rem/1.3 var(--body)}
+.hcard .tiny{font:500 .7rem/1.3 var(--mono);opacity:.7}
+.hcard.warn{border-color:#f6c453}.hcard.warn .huge{color:#f6c453}
+.hcard.bad{border-color:#ff8f85;background:rgba(255,143,133,.12)}.hcard.bad .huge{color:#ff8f85}
+.hcard.go{border-color:#7ee0a8}.hcard.go .huge{color:#7ee0a8}
+.pbar{height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;margin-top:6px}
+.pbar i{display:block;height:100%;background:#6aa1f2;border-radius:3px}
+.hcard.warn .pbar i{background:#f6c453}.hcard.bad .pbar i{background:#ff8f85}.hcard.go .pbar i{background:#7ee0a8}
+.minor{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:6px 14px;border-top:1px solid rgba(255,255,255,.15);padding-top:10px;font:500 .74rem/1.35 var(--body);opacity:.85}
+.minor span{display:flex;justify-content:space-between;gap:8px}
+.minor b{font:700 .78rem var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.minor b.warn{color:#f6c453}.minor b.bad{color:#ff8f85}
+@media (max-width:360px){.hero{grid-template-columns:1fr}.minor{grid-template-columns:1fr}}
 
 /* Tätigkeitstasten */
 .acts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -189,7 +207,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
         <div class="acts">
           <button class="actbtn drive" data-act="drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 14v7M10.3 11 3.5 9.5M13.7 11l6.8-1.5"/></svg>Lenken</button>
           <button class="actbtn rest" data-act="rest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.6"/></svg>Pause / Ruhe</button>
-          <button class="actbtn work" data-act="work"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 20 8-8M12 20l-8-8"/><path d="M8 4h4v4H8zM12 4h4v4h-4z" transform="rotate(45 12 6)"/></svg>Andere Arbeit</button>
+          <button class="actbtn work" data-act="work"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 20 16.5 7.5M20 20 7.5 7.5"/><path d="M20.2 8.8 17.8 11.2 12.8 6.2 15.2 3.8Z M3.8 8.8 6.2 11.2 11.2 6.2 8.8 3.8Z" fill="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>Sonstige Arbeiten</button>
           <button class="actbtn avail" data-act="avail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 20 20 4"/></svg>Bereitschaft</button>
         </div>
         <div class="mods" id="mods"></div>
@@ -253,7 +271,11 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
           <label class="check"><input type="checkbox" id="alSound"> Ton abspielen</label>
           <label class="field">Vorwarnung<select id="alPre"><option value="0">keine</option><option value="10">10 min vorher</option><option value="15">15 min vorher</option><option value="30">30 min vorher</option></select></label>
           <label class="check"><input type="checkbox" id="alWake"> Bildschirm beim Lenken anlassen</label>
-          <p class="small muted" style="margin:0">Die App kann nur Signale geben, solange sie geöffnet ist. Mit dieser Option bleibt der Bildschirm beim Lenken an, dann kommen die Hinweise zuverlässig. Am besten das Handy in eine Halterung und ans Ladekabel.</p>
+          <p class="small muted" style="margin:0" id="alWebNote">Die App kann nur Signale geben, solange sie geöffnet ist. Mit dieser Option bleibt der Bildschirm beim Lenken an, dann kommen die Hinweise zuverlässig. Am besten das Handy in eine Halterung und ans Ladekabel.</p>
+          <div id="alNative" hidden style="display:flex;flex-direction:column;gap:8px">
+            <p class="small muted" style="margin:0">Damit Erinnerungen pünktlich kommen, die App einmalig von der Akku-Optimierung ausnehmen: Handy-Einstellungen → Apps → Fahrerprotokoll → Akku → „Nicht eingeschränkt“. Den Ton der Erinnerungen stellst du unter Apps → Fahrerprotokoll → Benachrichtigungen ein.</p>
+            <button class="btn" id="alExact" hidden>„Wecker und Erinnerungen“ erlauben</button>
+          </div>
           <div class="btns"><button class="btn primary" id="alPerm">Benachrichtigungen erlauben</button><button class="btn" id="alTest">Signal testen</button></div>
           <p class="small muted" style="margin:0" id="alState"></p>
         </div>
@@ -290,7 +312,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
 
 <div class="sheet" id="sheet" hidden><div class="card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <h2 id="sheetTitle">Eintrag bearbeiten</h2>
-  <label class="field">Tätigkeit<select id="eType"><option value="drive">Lenken</option><option value="rest">Pause / Ruhe</option><option value="work">Andere Arbeit</option><option value="avail">Bereitschaft</option></select></label>
+  <label class="field">Tätigkeit<select id="eType"><option value="drive">Lenken</option><option value="rest">Pause / Ruhe</option><option value="work">Sonstige Arbeiten</option><option value="avail">Bereitschaft</option></select></label>
   <label class="field">Beginn<input type="datetime-local" id="eStart"></label>
   <label class="check" id="eOutWrap"><input type="checkbox" id="eOut"> Out of Scope</label>
   <label class="check" id="eFerryWrap"><input type="checkbox" id="eFerry"> Auf Fähre / Zug</label>
@@ -302,20 +324,20 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <p class="mail"><a href="mailto:David.Buenger@mail.de">David.Buenger@mail.de</a><button id="copyMail">Kopieren</button></p>
   <h2 id="infoTitle">Fahrerprotokoll</h2>
   <p style="margin:0">Erfassung und Prüfung von Lenk- und Ruhezeiten nach VO (EG) 561/2006 und Arbeitszeitgesetz. Entwickelt von David Bünger, Dozent für Verkehrs- und Fahrpersonalrecht.</p>
-  <p class="small muted" style="margin:0">Version 1.4. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
+  <p class="small muted" style="margin:0">Version 1.7. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
   <p style="margin:0;font-weight:600">© <span class="year">2026</span> David Bünger. Alle Rechte vorbehalten.</p>
   <div class="btns" style="justify-content:flex-end"><button class="btn primary" id="infoClose">Schließen</button></div>
 </div></div>
 <div class="sheet" id="help" hidden><div class="card help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 id="helpTitle">Hilfe</h2><button class="btn" id="helpClose">Schließen</button></div>
   <details open><summary>Erste Schritte</summary>
-    <p>Starte das Protokoll am besten direkt nach deiner Wochenruhe. Tippe zum Arbeitsbeginn auf die erste Tätigkeit, zum Beispiel <span class="key" style="background:var(--work)">Andere Arbeit</span> für die Abfahrtkontrolle. Ab jetzt läuft die Zeit mit.</p>
+    <p>Starte das Protokoll am besten direkt nach deiner Wochenruhe. Tippe zum Arbeitsbeginn auf die erste Tätigkeit, zum Beispiel <span class="key" style="background:var(--work)">Sonstige Arbeiten</span> für die Abfahrtkontrolle. Ab jetzt läuft die Zeit mit.</p>
     <p>Hast du mitten in der Woche angefangen? Trag unter <b>Einstellungen → Ausgangslage</b> ein, wie viel du diese Woche und in der Vorwoche schon gelenkt hast.</p></details>
   <details><summary>Tätigkeit wechseln</summary>
     <p>Bei jedem Wechsel tippst du einfach auf die neue Tätigkeit. Die vorherige endet automatisch zur selben Minute.</p>
     <ul><li><span class="key" style="background:var(--drive)">Lenken</span> – du fährst.</li>
     <li><span class="key" style="background:var(--brk)">Pause / Ruhe</span> – für Pausen <i>und</i> Ruhezeiten. Die App erkennt an der Länge, was es ist: unter 9 h Pause, ab 9 h Tagesruhe, ab 24 h Wochenruhe.</li>
-    <li><span class="key" style="background:var(--work)">Andere Arbeit</span> – Laden, Tanken, Abfahrtkontrolle, Papiere.</li>
+    <li><span class="key" style="background:var(--work)">Sonstige Arbeiten</span> – Laden, Tanken, Abfahrtkontrolle, Papiere.</li>
     <li><span class="key" style="background:var(--avail)">Bereitschaft</span> – Wartezeiten, deren Dauer vorher bekannt ist, oder Beifahrer.</li></ul></details>
   <details><summary>Out of Scope und Fähre/Zug</summary>
     <p>Läuft gerade <b>Lenken</b>, erscheint darunter der Schalter <b>Out of Scope</b>. Setz ihn, wenn du ein Fahrzeug außerhalb der Lenkzeitvorschriften fährst, etwa einen Transporter zur Firma. Die Fahrt zählt dann als andere Arbeit.</p>
@@ -369,7 +391,7 @@ const sortEv=()=>DB.events.sort((a,b)=>a.start-b.start);
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 /* ================= Zeit-Helfer ================= */
-const T={drive:"Lenken",work:"Andere Arbeit",avail:"Bereitschaft",rest:"Pause / Ruhe"};
+const T={drive:"Lenken",work:"Sonstige Arbeiten",avail:"Bereitschaft",rest:"Pause / Ruhe"};
 const COLOR={drive:"var(--drive)",work:"var(--work)",avail:"var(--avail)",rest:"var(--brk)"};
 function parseDur(s){s=String(s||"").trim();if(!s)return null;let m=s.match(/^(\d{1,3})[:.,](\d{1,2})$/);if(m&&+m[2]<60)return +m[1]*60+ +m[2];m=s.match(/^(\d{1,5})$/);if(m)return +m[1];return null}
 const fmt=m=>{const n=m<0;m=Math.abs(Math.round(m));return(n?"−":"")+Math.floor(m/60)+":"+String(m%60).padStart(2,"0")};
@@ -572,16 +594,40 @@ function renderToday(){
   else{const run=now-cur.start;
     top=`<div class="now"><div><div class="k">Aktuell seit ${hm(cur.start)}</div><div class="act">${T[cur.type]}${cur.out?" · OUT":""}${cur.ferry?" · Fähre":""}</div></div><div class="run">${fmt(Math.max(run,0))}</div></div>`}
   let cards="";
+  const cls=v=>v<=0?"bad":v<=30?"warn":"";
+  const card=(k,huge,why,tiny,cl,bar)=>`<div class="hcard ${cl||""}"><span class="k">${k}</span><span class="huge">${huge}</span><span class="why">${why}</span>${tiny?`<span class="tiny">${tiny}</span>`:""}${bar!=null?`<div class="pbar"><i style="width:${Math.max(0,Math.min(100,bar))}%"></i></div>`:""}</div>`;
   if(!cur)cards=`<div style="grid-column:1/-1" class="h">Tippe unten auf eine Tätigkeit, um das Protokoll zu starten. Am besten nach deiner Wochenruhe.</div>`;
-  else if(st.inRest){const left=Math.max(0,660-st.restLen);
-    cards=`<div><div class="k">Ruhezeit läuft</div><div class="v">${fmt(st.restLen)}</div><div class="h">seit ${dt(st.restSince)}</div></div>
-      <div><div class="k">Bis 11 h voll</div><div class="v">${left?fmt(left):"erreicht"}</div><div class="h">${left?"Ende frühestens "+hm(st.restSince+660):st.restLen>=1440?"zählt als Wochenruhe":"regelmäßige Tagesruhe"}</div></div>`}
-  else cards=`
-    <div><div class="k">Bis zur Pause</div><div class="v ${c(st.toBreak)}">${st.toBreak<0?"drüber":fmt(st.toBreak)}</div><div class="h">${st.half?"15 min erledigt, 30 fehlen":"45 min oder 15 + 30"}</div></div>
-    <div><div class="k">Restlenkzeit</div><div class="v ${c(st.dayLeft)}">${fmt(Math.max(st.dayLeft,0))}</div><div class="h">Schicht, max. ${fmt(st.dayMax)}</div></div>
-    <div><div class="k">Tagesruhe ab</div><div class="v ${st.restRed<now?"bad":""}">${hm(st.multi?st.restRed:st.restReg)}</div><div class="h">${st.multi?"9 h Mehrfahrer":"spätestens · verkürzt "+hm(st.restRed)}</div></div>`;
-  if(cur)cards+=`<div><div class="k">Rest Woche</div><div class="v ${c(st.weekLeft)}">${fmt(Math.max(st.weekLeft,0))}</div><div class="h">Doppelw. ${st.dblLeft==null?"–":fmt(Math.max(st.dblLeft,0))}</div></div>
-    <div style="grid-column:1/-1"><div class="k">Wochenruhe spätestens ab</div><div class="v" style="font-size:1.15rem">${dt(st.weeklyBy)}</div><div class="h">verkürzte Tagesruhen bisher: ${st.reducedCount} von 3</div></div>`;
+  else{
+    // Spätestes Schichtende: verkürzte Ruhe noch möglich → 9 h, sonst 11 h
+    const canRed=st.multi||st.reducedCount<3, shiftEnd=canRed?st.restRed:st.restReg, shiftLeft=shiftEnd-now;
+    const shiftCard=card("Schicht bis",hm(shiftEnd),shiftLeft>0?`spätestens · noch ${fmt(shiftLeft)} h`:"Tagesruhe jetzt beginnen",
+      st.multi?"Mehrfahrer: 9 h Ruhe":canRed?`für volle 11 h Ruhe: bis ${hm(st.restReg)}`:"keine verkürzte Ruhe mehr frei",shiftLeft<=0?"bad":shiftLeft<=60?"warn":"");
+    const el=now-cur.start;
+    if(cur.type==="rest"&&el>=540){
+      const next=el<660?{t:st.restSince+660,w:"11 h Ruhe um"}:el<1440?null:el<2700?{t:st.restSince+2700,w:"45 h Ruhe um"}:null;
+      cards=`<div class="hero">${card("Ruhezeit läuft",fmt(el),`seit ${dt(cur.start)}`,el>=2700?"regelmäßige Wochenruhe erfüllt":el>=1440?"zählt als Wochenruhe":el>=660?"regelmäßige Tagesruhe erfüllt":"verkürzte Tagesruhe (9 h) erfüllt","go",Math.min(100,el/660*100))}
+        ${card(next?next.w:"Weiterfahrt",next?hm(next.t):"frei",next?`noch ${fmt(next.t-now)} h`:"Ruhezeit erfüllt",null,next?"":"go")}</div>`;
+    }else if(cur.type==="rest"){
+      const before=analyze(DB.events.slice(0,-1).concat([{...cur,type:"work",start:cur.start}]),{...opts(),now:cur.start}).status;
+      const driven=before.toBreak<270,need=before.half?30:45,left=need-el;
+      cards=`<div class="hero">${driven?card("Pause läuft",fmt(el),left>0?`Weiterfahrt in ${left} min`:"Pause erfüllt – Weiterfahrt möglich",
+          left>0?(before.half?"2. Teil: 30 min nötig":el>=15?"15 min zählen schon als 1. Teil":"45 min oder 15 + 30"):"",left>0?"":"go",el/need*100)
+        :card("Pause läuft",fmt(el),"keine Fahrtunterbrechung nötig","",null)}${shiftCard}</div>`;
+    }else{
+      const lim=[{v:st.toBreak,w:`dann ${st.half?"30":"45"} min Pause`},{v:st.dayLeft,w:"dann Tageslenkzeit voll"},{v:st.weekLeft,w:"dann Wochenlenkzeit voll"},
+        ...(st.dblLeft!=null?[{v:st.dblLeft,w:"dann Doppelwoche voll"}]:[]),{v:shiftLeft,w:"dann Tagesruhe beginnen"}].sort((a,b)=>a.v-b.v)[0];
+      const label=cur.type==="drive"&&!cur.out?"Fahren noch":"Lenkzeit verfügbar";
+      cards=`<div class="hero">${card(label,lim.v<=0?"0:00":fmt(lim.v),lim.v<=0?(lim.w.replace("dann ","Jetzt: ").replace("voll","erreicht")):lim.w,
+          `Lenkblock ${fmt(270-Math.max(st.toBreak,0))} von 4:30${st.half?" · 15 min erledigt":""}`,cls(lim.v),(270-st.toBreak)/270*100)}${shiftCard}</div>`;
+    }
+    const used=st.dayMax-st.dayLeft;
+    cards+=`<div class="minor">
+      <span>Lenkzeit <b class="${st.dayLeft<=0?"bad":""}">${fmt(Math.max(used,0))} / ${fmt(st.dayMax)}</b></span>
+      <span>Rest Woche <b class="${cls(st.weekLeft)}">${fmt(Math.max(st.weekLeft,0))}</b></span>
+      <span>Rest Doppelwoche <b class="${st.dblLeft==null?"":cls(st.dblLeft)}">${st.dblLeft==null?"–":fmt(Math.max(st.dblLeft,0))}</b></span>
+      <span>Verkürzte Ruhen <b>${st.reducedCount} / 3</b></span>
+      <span style="grid-column:1/-1">Wochenruhe ab <b>${dt(st.weeklyBy)}</b></span></div>`;
+  }
   $("display").innerHTML=top+cards;
   document.querySelectorAll("[data-act]").forEach(b=>b.setAttribute("aria-pressed",String(!!cur&&cur.type===b.dataset.act)));
   $("mods").innerHTML=cur&&cur.type==="drive"?`<label class="check"><input type="checkbox" id="curOut"${cur.out?" checked":""}> Diese Fahrt ist Out of Scope</label>`
@@ -649,10 +695,12 @@ function renderSettings(){const s=DB.settings;$("multi").checked=!!s.multi;$("pr
 
 function render(){sortEv();R=analyze(DB.events,opts());
   if(view==="today")renderToday();else if(view==="log")renderLog();else if(view==="eval")renderEval();else renderSettings()}
-function commit(){sortEv();saveDB();render()}
+function commit(){sortEv();saveDB();render();planNative()}
 
 /* ================= Hinweise und Signale ================= */
 let audioCtx=null,wakeLock=null;
+const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const PL=NATIVE?window.Capacitor.Plugins:{};const LN=PL.LocalNotifications||null;
 const AL=()=>DB.settings;
 function unlockAudio(){try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==="suspended")audioCtx.resume()}catch(e){}}
 function beep(kind){if(AL().alSound===false)return;unlockAudio();if(!audioCtx)return;
@@ -663,8 +711,8 @@ function beep(kind){if(AL().alSound===false)return;unlockAudio();if(!audioCtx)re
 function notify(title,body,kind){
   $("alertTitle").textContent=title;$("alertText").textContent=body;const bar=$("alertBar");bar.className="alert "+(kind||"");bar.hidden=false;
   clearTimeout(notify.h);notify.h=setTimeout(()=>bar.hidden=true,60000);
-  beep(kind);if(navigator.vibrate)try{navigator.vibrate(kind==="stop"?[400,150,400,150,400]:[300,120,300])}catch(e){}
-  if("Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker)
+  if(!NATIVE)beep(kind);if(navigator.vibrate)try{navigator.vibrate(kind==="stop"?[400,150,400,150,400]:[300,120,300])}catch(e){}
+  if(!NATIVE&&"Notification" in window&&Notification.permission==="granted"&&navigator.serviceWorker)
     navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:"icon-192.png",badge:"icon-192.png",tag:"fp-"+(kind||"info"),renotify:true,vibrate:[300,120,300]})).catch(()=>{});
 }
 $("alertOk").onclick=()=>$("alertBar").hidden=true;
@@ -700,21 +748,70 @@ function checkAlerts(){
     if(el>=2700)fire(id+"w45","45 h Ruhe erreicht","Regelmäßige Wochenruhe erfüllt.","go");
   }
 }
+/* Vorausschau: Welche Hinweise kommen, wenn sich nichts ändert? (für Android-Erinnerungen) */
+function forecast(){
+  const out=[];if(AL().alOn===false||!DB.events.length)return out;
+  const cur=DB.events[DB.events.length-1],now=nowMin(),pre=+(AL().alPre??15);
+  const st=analyze(DB.events,opts()).status,A=(at,title,body)=>{if(at>now)out.push({at,title,body})};
+  if(cur.type==="drive"&&!cur.out){
+    const tb=st.toBreak,dl=st.dayLeft;
+    if(pre)A(now+tb-pre,"Pause bald fällig",`Noch ${pre} min bis zur Fahrtunterbrechung.`);
+    A(now+tb,"Jetzt Pause einlegen",`4:30 h Lenkzeit erreicht. ${st.half?"Jetzt mindestens 30 min":"Jetzt mindestens 45 min"} Pause.`);
+    if(pre)A(now+dl-pre,"Tageslenkzeit fast erreicht",`Noch ${pre} min Lenkzeit in dieser Schicht.`);
+    A(now+dl,"Tageslenkzeit erreicht",`Die maximale Lenkzeit von ${fmt(st.dayMax)} h ist erreicht. Nicht weiterfahren.`);
+    A(now+st.weekLeft,"Wochenlenkzeit erreicht","56 h Lenkzeit in dieser Woche sind erreicht.");
+  }
+  if(cur.type!=="rest"&&!st.inRest){
+    const due=st.multi?st.restRed:st.restReg;
+    if(pre)A(due-pre,"Tagesruhe bald fällig",`Spätestens um ${hm(due)} muss die Tagesruhe beginnen.`);
+    if(!st.multi)A(due,"Tagesruhe jetzt beginnen",`Für 11 h Ruhe ist es Zeit. Verkürzt (9 h) spätestens um ${hm(st.restRed)}.`);
+  }
+  if(cur.type==="rest"){
+    const before=analyze(DB.events.slice(0,-1).concat([{...cur,type:"work",start:cur.start}]),{...opts(),now:cur.start}).status;
+    const driven=before.toBreak<270,need=before.half?30:45,s=cur.start;
+    if(driven&&!before.half&&pre)A(s+15,"15 min erledigt","Die erste Teilpause zählt. Später noch 30 min, oder jetzt bis 45 min weiter pausieren.");
+    if(driven)A(s+need,"Pause erfüllt",`${need} min Fahrtunterbrechung erreicht. Weiterfahrt möglich.`);
+    A(s+540,"9 h Ruhe erreicht","Verkürzte Tagesruhe erfüllt. Für eine regelmäßige Tagesruhe noch 2 h.");
+    A(s+660,"11 h Ruhe erreicht","Regelmäßige Tagesruhe erfüllt.");
+    A(s+1440,"24 h Ruhe erreicht","Verkürzte Wochenruhe erfüllt. Regelmäßig sind 45 h.");
+    A(s+2700,"45 h Ruhe erreicht","Regelmäßige Wochenruhe erfüllt.");
+  }
+  return out.sort((a,b)=>a.at-b.at);
+}
+let planT=null;
+function planNative(){if(!LN)return;clearTimeout(planT);planT=setTimeout(async()=>{
+  try{const p=await LN.getPending();if(p&&p.notifications&&p.notifications.length)await LN.cancel({notifications:p.notifications.map(n=>({id:+n.id}))});
+    const list=forecast().slice(0,20);if(!list.length)return;
+    await LN.schedule({notifications:list.map((x,i)=>({id:100+i,title:x.title,body:x.body,channelId:"fp-alerts",schedule:{at:new Date(x.at*60000),allowWhileIdle:true}}))});
+  }catch(e){console.log("planNative",e)}},300)}
+async function nativeInit(){if(!LN)return;
+  try{await LN.requestPermissions()}catch(e){}
+  try{await LN.createChannel({id:"fp-alerts",name:"Lenk- und Ruhezeiten",description:"Hinweise zu Pausen, Lenk- und Ruhezeiten",importance:5,visibility:1,vibration:true,lights:true,lightColor:"#EF7D1A"})}catch(e){}
+  planNative();nativeState();
+}
+async function nativeState(){if(!LN)return;const el=$("alState");if(!el)return;let t="Android-App: Erinnerungen kommen auch bei geschlossener App.";
+  try{const r=await LN.checkPermissions();if(r.display!=="granted")t+=" Benachrichtigungen sind noch nicht erlaubt.";}catch(e){}
+  try{if(LN.checkExactNotificationSetting){const x=await LN.checkExactNotificationSetting();$("alExact").hidden=x.exact_alarm==="granted";if(x.exact_alarm!=="granted")t+=" Für pünktliche Erinnerungen bitte „Wecker und Erinnerungen“ erlauben."}}catch(e){}
+  el.textContent=t}
 async function updateWake(){
   const want=AL().alWake&&!document.hidden&&DB.events.length&&DB.events[DB.events.length-1].type==="drive";
   try{if(want&&!wakeLock&&navigator.wakeLock){wakeLock=await navigator.wakeLock.request("screen");wakeLock.addEventListener("release",()=>wakeLock=null)}
       if(!want&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}
 }
 function alStateText(){const el=$("alState");if(!el)return;
+  if(NATIVE){$("alPerm").hidden=true;$("alNative").hidden=false;$("alWebNote").hidden=true;nativeState();return}
   const p=!("Notification" in window)?"Dieses Gerät unterstützt keine Systembenachrichtigungen. Ton, Vibration und Banner funktionieren trotzdem."
     :Notification.permission==="granted"?"Benachrichtigungen sind erlaubt.":Notification.permission==="denied"?"Benachrichtigungen sind blockiert. Freigabe in den Handy-Einstellungen für Chrome bzw. die App.":"Benachrichtigungen noch nicht erlaubt.";
   el.textContent=p+(navigator.wakeLock?"":" Bildschirm-Anlassen wird von diesem Gerät nicht unterstützt.");
   $("alPerm").hidden=!("Notification" in window)||Notification.permission!=="default";
 }
-["alOn","alSound","alWake"].forEach(id=>$(id).onchange=e=>{DB.settings[id]=e.target.checked;saveDB();renderSettings();updateWake();if(e.target.checked)unlockAudio()});
-$("alPre").onchange=e=>{DB.settings.alPre=e.target.value;saveDB()};
+["alOn","alSound","alWake"].forEach(id=>$(id).onchange=e=>{DB.settings[id]=e.target.checked;saveDB();renderSettings();updateWake();planNative();if(e.target.checked)unlockAudio()});
+$("alPre").onchange=e=>{DB.settings.alPre=e.target.value;saveDB();planNative()};
 $("alPerm").onclick=()=>{unlockAudio();if("Notification" in window)Notification.requestPermission().then(()=>alStateText())};
-$("alTest").onclick=()=>{unlockAudio();setTimeout(()=>notify("Signal-Test","So klingt ein Hinweis der App.","stop"),150)};
+$("alTest").onclick=()=>{unlockAudio();
+  if(LN){LN.schedule({notifications:[{id:99,title:"Signal-Test",body:"So kommt eine Erinnerung der App an.",channelId:"fp-alerts",schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]}).then(()=>toast("Test-Erinnerung kommt in 5 Sekunden")).catch(()=>toast("Erinnerung nicht möglich – Berechtigung prüfen"));return}
+  setTimeout(()=>notify("Signal-Test","So klingt ein Hinweis der App.","stop"),150)};
+$("alExact").onclick=()=>{try{LN&&LN.changeExactNotificationSetting&&LN.changeExactNotificationSetting().then(nativeState)}catch(e){}};
 document.addEventListener("pointerdown",unlockAudio,{once:true});
 
 /* Tätigkeit wechseln */
@@ -750,7 +847,12 @@ $("addEntry").onclick=()=>openEdit(null);
 ["multi","lastReduced","pro"].forEach(id=>$(id).onchange=e=>{DB.settings[id]=e.target.checked;commit();if(id==="pro")toast(e.target.checked?"Profi-Ansicht an":"Profi-Ansicht aus")});
 ["prevWeek","weekBefore"].forEach(id=>$(id).oninput=e=>{DB.settings[id]=e.target.value;saveDB();R=analyze(DB.events,opts())});
 $("tenBefore").onchange=e=>{DB.settings.tenBefore=e.target.value;commit()};
-$("export").onclick=()=>{const blob=new Blob([JSON.stringify({app:"fahrerprotokoll",version:1,exported:new Date().toISOString(),...DB},null,1)],{type:"application/json"});
+$("export").onclick=async()=>{
+  if(NATIVE&&PL.Filesystem&&PL.Share){try{const d=new Date(),name=`fahrerprotokoll-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.json`;
+      const r=await PL.Filesystem.writeFile({path:name,data:JSON.stringify({app:"fahrerprotokoll",version:1,exported:d.toISOString(),...DB},null,1),directory:"CACHE",encoding:"utf8"});
+      await PL.Share.share({title:"Fahrerprotokoll-Sicherung",text:"Sicherung meines Fahrerprotokolls",files:[r.uri],dialogTitle:"Sicherung speichern oder senden"});}
+    catch(e){if(!String(e).includes("cancel"))toast("Sicherung fehlgeschlagen")}return}
+  const blob=new Blob([JSON.stringify({app:"fahrerprotokoll",version:1,exported:new Date().toISOString(),...DB},null,1)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);const d=new Date();a.download=`fahrerprotokoll-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.json`;
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast("Sicherung gespeichert")};
 $("importFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
@@ -783,15 +885,15 @@ function setView(v){view=v;["today","log","eval","set"].forEach(k=>$("v-"+k).hid
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>setView(b.dataset.view));
 
 /* Start */
-loadDB();render();
+loadDB();render();nativeInit();
 /* Startbildschirm: höchstens 2,5 s, Antippen überspringt */
 (function(){const s=$("splash");let done=false;const hide=()=>{if(done)return;done=true;s.classList.add("out");setTimeout(()=>s.remove(),500)};
   s.addEventListener("click",hide);setTimeout(hide,matchMedia("(prefers-reduced-motion: reduce)").matches?1200:2200)})();
 setInterval(()=>{if(view==="today"||view==="log")render()},30000);
 setInterval(checkAlerts,15000);setTimeout(checkAlerts,3000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();checkAlerts()}updateWake()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();checkAlerts();nativeState()}updateWake()});
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
-if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+if(!NATIVE&&"serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 </script>
 </body>
 </html>
