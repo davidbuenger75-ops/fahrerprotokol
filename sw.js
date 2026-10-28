@@ -1,6 +1,6 @@
 // Offline-Betrieb: App-Dateien werden zwischengespeichert.
 // Bei jedem Update die Versionsnummer erhöhen, dann holen sich alle Handys die neue Fassung.
-const CACHE = "fahrerprotokoll-v8";
+const CACHE = "fahrerprotokoll-v9";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./logo-full.png"];
 
 self.addEventListener("install", e => {

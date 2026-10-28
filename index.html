@@ -154,6 +154,17 @@ nav button[aria-current="page"]{color:var(--accent);background:var(--soft);box-s
 
 /* Protokoll */
 .dayhead{font:700 .8rem var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 0 4px}
+.dayx{border-top:1px solid var(--line)}
+.dayx:first-child{border-top:0}
+.dayx>summary{list-style:none;cursor:pointer;padding:6px 0 2px;display:flex;flex-direction:column;gap:4px}
+.dayx>summary::-webkit-details-marker{display:none}
+.dayx .dhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dayx .dhead .dayhead{padding:6px 0 0}
+.dayx .dsum{font:600 .75rem var(--mono);color:var(--muted);white-space:nowrap}
+.dayx .chev{width:20px;height:20px;flex:none;color:var(--muted);transition:transform .2s}
+.dayx[open] .chev{transform:rotate(180deg)}
+.dayx .cnt{font:500 .72rem var(--body);color:var(--muted)}
+.logtools{display:flex;justify-content:flex-end;gap:8px;margin-bottom:4px}
 .strip{position:relative;height:22px;background:var(--soft);border-radius:3px;overflow:hidden;margin-bottom:6px}
 .strip span{position:absolute;top:0;bottom:0}
 .s-drive{background:var(--drive)}.s-work{background:var(--work)}.s-avail{background:var(--avail)}.s-rest{background:var(--brk);opacity:.55}
@@ -291,7 +302,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
       </div>
       <div class="panel">
         <h2>Ausprobieren</h2>
-        <div class="btns"><button class="btn" id="demo">Beispielwoche laden</button><button class="btn danger" id="wipe">Alles löschen</button></div>
+        <div class="btns"><button class="btn" id="demo">Beispielwoche mit 2 Verstößen laden</button><button class="btn danger" id="wipe">Alles löschen</button></div>
       </div>
       <div class="panel small muted">
         <p style="margin:0"><strong>Grundlage:</strong> VO (EG) 561/2006 in der Fassung der VO (EU) 2020/1054, Art. 6–9, sowie §§ 3, 4, 21a ArbZG. Out-of-Scope-Fahrten zählen als andere Arbeit, Bereitschaft nicht als Arbeitszeit.</p>
@@ -324,7 +335,7 @@ td .bad{color:var(--bad);font-weight:700} td .warn{color:var(--warn);font-weight
   <p class="mail"><a href="mailto:David.Buenger@mail.de">David.Buenger@mail.de</a><button id="copyMail">Kopieren</button></p>
   <h2 id="infoTitle">Fahrerprotokoll</h2>
   <p style="margin:0">Erfassung und Prüfung von Lenk- und Ruhezeiten nach VO (EG) 561/2006 und Arbeitszeitgesetz. Entwickelt von David Bünger, Dozent für Verkehrs- und Fahrpersonalrecht.</p>
-  <p class="small muted" style="margin:0">Version 1.7. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
+  <p class="small muted" style="margin:0">Version 1.8. Deine Daten bleiben ausschließlich auf diesem Gerät. Planungs- und Lernhilfe ohne Gewähr, bei Kontrollen zählen allein die Daten des Fahrtenschreibers.</p>
   <p style="margin:0;font-weight:600">© <span class="year">2026</span> David Bünger. Alle Rechte vorbehalten.</p>
   <div class="btns" style="justify-content:flex-end"><button class="btn primary" id="infoClose">Schließen</button></div>
 </div></div>
@@ -639,6 +650,7 @@ function renderToday(){
   $("recent").innerHTML=rec.length?rec.map(issueLi).join(""):`<li><span class="pill ok">OK</span><div>In den letzten 7 Tagen ist alles eingehalten.</div></li>`;
 }
 
+let openDays=new Set(),closedAll=false;
 function renderLog(){
   if(!DB.events.length){$("log").innerHTML=`<div class="empty">Noch keine Einträge. Starte auf „Heute“ mit einer Tätigkeit oder trage über „Nachtragen“ etwas ein.</div>`;return}
   const byId=new Map(R.S.map(g=>[g.id,g]));
@@ -655,7 +667,18 @@ function renderLog(){
     const list=days.get(d).slice().reverse().map(ev=>{const g=byId.get(ev.id);const dur=g?g.d:0;
       return `<button class="entry${g&&g.over!=null?" flag":""}" data-edit="${ev.id}"><span class="dot" style="background:${COLOR[ev.type]}"></span><span class="t">${hm(ev.start)}</span>
         <span>${T[ev.type]}${ev.out?'<span class="tag">OUT</span>':""}${ev.ferry?'<span class="tag">Fähre</span>':""}</span><span class="d">${g&&g.open?"läuft ":""}${fmt(dur)}</span></button>`}).join("");
-    return `<div><div class="dayhead">${dd(d)} ${D(d).getFullYear()}</div><div class="strip">${strip}</div>${list}</div>`}).join("");
+    const sum=k=>R.S.filter(g=>g.type===k&&!(k==="drive"&&g.out)).reduce((a,g)=>a+Math.max(0,Math.min(g.e,de)-Math.max(g.s,d)),0);
+    const n=days.get(d).length, open=openDays.has(d)||(!openDays.size&&!closedAll&&d===keys.find(k=>days.get(k).length));
+    return `<details class="dayx" data-day="${d}"${open?" open":""}><summary><div class="dhead"><span class="dayhead">${dd(d)} ${D(d).getFullYear()}</span>
+      <span class="dsum">Lenken ${fmt(sum("drive"))} · Arbeit ${fmt(sum("work"))}</span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>
+      <div class="strip">${strip}</div><span class="cnt">${n?`${n} ${n===1?"Eintrag":"Einträge"} – ${open?"zum Einklappen tippen":"zum Aufklappen tippen"}`:"keine Einträge, nur durchgehende Ruhe"}</span></summary>${list}</details>`}).join("");
+  $("log").insertAdjacentHTML("afterbegin",`<div class="logtools"><button class="btn sm" id="openAll">Alle aufklappen</button><button class="btn sm" id="closeAll">Alle zuklappen</button></div>`);
+  $("openAll").onclick=()=>{closedAll=false;keys.forEach(k=>openDays.add(k));renderLog()};
+  $("closeAll").onclick=()=>{closedAll=true;openDays.clear();renderLog()};
+  $("log").querySelectorAll("details.dayx").forEach(el=>el.addEventListener("toggle",()=>{const k=+el.dataset.day;
+    if(el.open)openDays.add(k);else{openDays.delete(k);if(!openDays.size)closedAll=true}
+    const c=el.querySelector(".cnt");if(c&&c.textContent.includes("tippen"))c.textContent=c.textContent.replace(/zum (Ein|Auf)klappen tippen/,el.open?"zum Einklappen tippen":"zum Aufklappen tippen")}));
   $("log").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEdit(b.dataset.edit));
 }
 
@@ -863,11 +886,12 @@ $("importFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new 
 $("wipe").onclick=()=>{const b=$("wipe");if(b.dataset.armed){DB.events=[];commit();delete b.dataset.armed;b.textContent="Alles löschen";toast("Protokoll gelöscht");return}
   b.dataset.armed="1";b.textContent="Wirklich alles löschen?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Alles löschen"},3000)};
 $("demo").onclick=()=>{
-  const rows=[["work",30],["drive",240],["rest",45],["drive",270],["work",30],["rest",885],["work",15],["drive",150],["rest",15],["drive",120],["rest",30],["drive",120],["work",30],
+  // Tag 1 enthält zwei Verstöße zum Testen: 4:50 h ohne Fahrtunterbrechung (LV 48 Nr. 106) und nur 8:30 h Tagesruhe (Nr. 108)
+  const rows=[["work",30],["drive",290],["rest",45],["drive",240],["work",30],["rest",510],["work",15],["drive",150],["rest",15],["drive",120],["rest",30],["drive",120],["work",30],
    ["rest",120,1],["drive",15],["rest",360,1],["drive",15],["rest",300,1],["work",30],["drive",270],["rest",45],["drive",210],["drive",45,1],["work",30],["rest",2700]];
-  const total=rows.reduce((a,r)=>a+r[1],0);let t=nowMin()-total-60;t=dayStart(t)+360;
+  const total=rows.reduce((a,r)=>a+r[1],0);const t0=nowMin()-total-60;let t=dayStart(t0)+720;if(t>t0)t-=1440;
   DB.events=rows.map(([type,d,f])=>{const ev={id:uid(),type,start:t,out:type==="drive"&&!!f,ferry:type==="rest"&&!!f};t+=d;return ev});
-  commit();toast("Beispielwoche geladen");setView("log")};
+  commit();toast(DB.settings.pro?"Beispielwoche mit 2 Verstößen geladen":"Beispielwoche geladen – für Bußgelder Profi-Ansicht einschalten");setView("log")};
 
 /* Info */
 $("infoBtn").onclick=()=>{$("info").hidden=false;$("infoClose").focus()};
